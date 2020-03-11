@@ -1,4 +1,4 @@
-# StaffBase Q&A Application
+# Q&A Application
 This application is a plugin for Question and Answers. It is designed over a very simple architecture called service oriented recently known as microservice architecture. Spring Boot provides excellent easy way to implement using this architecture. The design is 4 layer or 4 tier architecture where the last two layer implementation is added here.
 ![Image of Architecture](https://github.com/sankhasil/SampleProjects/blob/master/QANDA/images/architectureProposal.png)
 
