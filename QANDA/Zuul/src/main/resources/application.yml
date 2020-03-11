@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: zuul-api-gateway-server
+server:
+  port: 8765
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+zuul:
+  host:
+    connectionRequestTimeoutMillis: 99000000
+    socketTimeoutMillis: 99000000
+    sensitiveHeaders: 'Cookie,Set-Cookie'
+ribbon:
+  ReadTimeout: 99000000
+  SocketTimeout: 99000000
+logging:
+  file: './log/zuulGatewayService.log'
+identity:
+  url: '/identity/login'

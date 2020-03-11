@@ -1,0 +1,11 @@
+spring:
+   application:
+      name: qanda
+   profiles:
+      active: local
+
+server:
+  port: 7007
+
+logging:
+  file: ./log/qanda.log
