@@ -1,6 +1,6 @@
 # StaffBase Q&A Application
 This application is a plugin for Question and Answers. It is designed over a very simple architecture called service oriented recently known as microservice architecture. Spring Boot provides excellent easy way to implement using this architecture. The design is 4 layer or 4 tier architecture where the last two layer implementation is added here.
-![Image of Architecture](https://github.com/Staffbase/bc_sankha_sil/blob/master/images/architectureProposal.png)
+![Image of Architecture](https://github.com/sankhasil/SampleProjects/QANDA/images/architectureProposal.png)
 
 ## Philosophy
 - Segregating the Architecture layers into a 4 tier model provides benefits of the 3 Tier model. This inherently supports distributed environment. 
@@ -16,16 +16,16 @@ It can be a Post or marked as Question. A post can have list of comments in text
 ### Answer
 It must have a post id associated with it. Post requires to be a question. Without that it should not get created.
 
-![Image of Architecture](https://github.com/Staffbase/bc_sankha_sil/blob/master/images/EnitityDiagram.jpg)
+![Image of Architecture](https://github.com/sankhasil/SampleProjects/QANDA/images/EnitityDiagram.jpg)
 ### BaseModel
 The Base Model for any entity. Has the Audit Trail Data.
 
 
 
 ## UseCase
-![Image of Architecture](https://github.com/Staffbase/bc_sankha_sil/blob/master/images/userCase.jpg)
+![Image of Architecture](https://github.com/sankhasil/SampleProjects/QANDA/images/userCase.jpg)
 
 ## Vision
-![Image of Architecture](https://github.com/Staffbase/bc_sankha_sil/blob/master/images/ecosystemVision.png)
+![Image of Architecture](https://github.com/sankhasil/SampleProjects/QANDA/images/ecosystemVision.png)
 
-![Image of Architecture](https://github.com/Staffbase/bc_sankha_sil/blob/master/images/microserviceCommunicationVision.png)
+![Image of Architecture](https://github.com/sankhasil/SampleProjects/QANDA/images/microserviceCommunicationVision.png)
