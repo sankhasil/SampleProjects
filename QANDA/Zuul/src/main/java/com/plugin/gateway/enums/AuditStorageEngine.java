@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.sdgt.gateway.enums;
+package com.plugin.gateway.enums;
 
 /**
  * @author Sankha

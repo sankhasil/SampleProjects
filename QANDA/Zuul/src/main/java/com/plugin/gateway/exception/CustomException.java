@@ -1,4 +1,4 @@
-package com.sdgt.gateway.exception;
+package com.plugin.gateway.exception;
 
 import org.springframework.http.HttpStatus;
 

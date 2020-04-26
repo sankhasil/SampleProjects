@@ -1,4 +1,4 @@
-package com.sdgt.gateway.rest.model;
+package com.plugin.gateway.rest.model;
 
 public class AuthBody {
 

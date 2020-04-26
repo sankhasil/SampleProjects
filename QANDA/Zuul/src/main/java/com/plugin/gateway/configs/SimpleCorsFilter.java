@@ -1,4 +1,4 @@
-package com.sdgt.gateway.configs;
+package com.plugin.gateway.configs;
 /*
 package com.sdgt.zuul.configs;
 

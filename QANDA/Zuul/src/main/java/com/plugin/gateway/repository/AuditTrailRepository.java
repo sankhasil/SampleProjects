@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.sdgt.gateway.repository;
+package com.plugin.gateway.repository;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -41,8 +41,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mongodb.MongoClient;
-import com.sdgt.gateway.enums.AuditStorageEngine;
-import com.sdgt.gateway.trail.model.AuditTrail;
+import com.plugin.gateway.enums.AuditStorageEngine;
+import com.plugin.gateway.trail.model.AuditTrail;
 
 /**
  * @author Sankha

@@ -1,4 +1,9 @@
-package com.sdgt.gateway.service;
+package com.plugin.gateway.service;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,12 +14,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.sdgt.gateway.auth.model.Role;
-import com.sdgt.gateway.auth.model.User;
-import com.sdgt.gateway.repository.RoleRepository;
-import com.sdgt.gateway.repository.UserRepository;
-
-import java.util.*;
+import com.plugin.gateway.auth.model.Role;
+import com.plugin.gateway.auth.model.User;
+import com.plugin.gateway.repository.RoleRepository;
+import com.plugin.gateway.repository.UserRepository;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

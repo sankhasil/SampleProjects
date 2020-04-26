@@ -1,12 +1,16 @@
-package com.sdgt.gateway.controller;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import com.sdgt.gateway.auth.model.Product;
-import com.sdgt.gateway.repository.ProductRepository;
+package com.plugin.gateway.controller;
 
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.plugin.gateway.auth.model.Product;
+import com.plugin.gateway.repository.ProductRepository;
 
 @RestController
 public class ProductController {

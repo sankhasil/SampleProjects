@@ -1,4 +1,4 @@
-package com.sdgt.gateway.configs;
+package com.plugin.gateway.configs;
 
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

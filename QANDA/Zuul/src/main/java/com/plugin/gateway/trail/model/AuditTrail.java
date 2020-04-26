@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.sdgt.gateway.trail.model;
+package com.plugin.gateway.trail.model;
 
 import java.io.Serializable;
 import java.time.Instant;

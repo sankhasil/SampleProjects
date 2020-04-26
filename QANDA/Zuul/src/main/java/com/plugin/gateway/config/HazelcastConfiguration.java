@@ -1,13 +1,14 @@
 package com.plugin.gateway.config;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.config.EvictionPolicy;
-import com.hazelcast.config.MapConfig;
-import com.hazelcast.config.MaxSizeConfig;
-
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.hazelcast.config.Config;
+import com.hazelcast.config.EvictionConfig;
+import com.hazelcast.config.EvictionPolicy;
+import com.hazelcast.config.MapConfig;
+import com.hazelcast.config.MaxSizePolicy;
 
 
 @Configuration
@@ -16,12 +17,14 @@ public class HazelcastConfiguration {
     @Bean
     public Config hazelCastConfig(){
         Config config = new Config();
+        EvictionConfig evictionConfig = new EvictionConfig();
+        evictionConfig.setEvictionPolicy(EvictionPolicy.LRU);
+        evictionConfig.setMaxSizePolicy(MaxSizePolicy.FREE_HEAP_SIZE);
         config.setInstanceName("hazelcast-instance")
                 .addMapConfig(
                         new MapConfig()
                                 .setName("configuration")
-                                .setMaxSizeConfig(new MaxSizeConfig(200, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
-                                .setEvictionPolicy(EvictionPolicy.LRU)
+                                .setEvictionConfig(evictionConfig)
                                 .setTimeToLiveSeconds(-1));
         return config;
     }

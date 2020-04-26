@@ -1,10 +1,11 @@
-package com.sdgt.gateway.configs;
+package com.plugin.gateway.configs;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -19,9 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
-import com.sdgt.gateway.service.CustomUserDetailsService;
-
-import javax.servlet.http.HttpServletResponse;
+import com.plugin.gateway.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity

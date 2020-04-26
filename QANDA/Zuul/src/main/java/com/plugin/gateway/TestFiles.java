@@ -1,26 +1,10 @@
-package com.sdgt.gateway;
+package com.plugin.gateway;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
-import java.lang.reflect.Array;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-
-import com.sdgt.gateway.trail.model.AuditTrail;
 
 public class TestFiles {
 	private static final String AUDIT_TRAIL_FILE_PREFIX = "trailList";

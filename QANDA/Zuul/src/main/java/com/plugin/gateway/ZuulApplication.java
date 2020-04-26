@@ -1,4 +1,4 @@
-package com.sdgt.gateway;
+package com.plugin.gateway;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -8,9 +8,9 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
 
-import com.sdgt.gateway.auth.model.Role;
-import com.sdgt.gateway.property.AuditConfigurationProperties;
-import com.sdgt.gateway.repository.RoleRepository;
+import com.plugin.gateway.auth.model.Role;
+import com.plugin.gateway.property.AuditConfigurationProperties;
+import com.plugin.gateway.repository.RoleRepository;
 
 @EnableZuulProxy
 @EnableDiscoveryClient

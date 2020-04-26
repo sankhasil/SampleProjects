@@ -1,4 +1,9 @@
-package com.sdgt.gateway.controller;
+package com.plugin.gateway.controller;
+
+import static org.springframework.http.ResponseEntity.ok;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,16 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sdgt.gateway.auth.model.User;
-import com.sdgt.gateway.configs.JwtTokenProvider;
-import com.sdgt.gateway.repository.UserRepository;
-import com.sdgt.gateway.rest.model.AuthBody;
-import com.sdgt.gateway.service.CustomUserDetailsService;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.springframework.http.ResponseEntity.ok;
+import com.plugin.gateway.auth.model.User;
+import com.plugin.gateway.configs.JwtTokenProvider;
+import com.plugin.gateway.repository.UserRepository;
+import com.plugin.gateway.rest.model.AuthBody;
+import com.plugin.gateway.service.CustomUserDetailsService;
 
 @RestController
 @RequestMapping("/api/auth")

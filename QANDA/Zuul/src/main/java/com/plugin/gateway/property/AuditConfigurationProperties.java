@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.sdgt.gateway.property;
+package com.plugin.gateway.property;
 
 import javax.validation.constraints.NotNull;
 

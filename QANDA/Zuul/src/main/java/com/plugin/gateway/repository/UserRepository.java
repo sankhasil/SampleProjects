@@ -1,8 +1,8 @@
-package com.sdgt.gateway.repository;
+package com.plugin.gateway.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.sdgt.gateway.auth.model.User;
+import com.plugin.gateway.auth.model.User;
 
 public interface UserRepository extends MongoRepository<User, String> {
 

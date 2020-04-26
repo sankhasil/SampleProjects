@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.sdgt.gateway.filters;
+package com.plugin.gateway.filters;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -25,10 +24,10 @@ import org.springframework.stereotype.Component;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
-import com.sdgt.gateway.enums.AuditStorageEngine;
-import com.sdgt.gateway.property.AuditConfigurationProperties;
-import com.sdgt.gateway.repository.AuditTrailRepository;
-import com.sdgt.gateway.trail.model.AuditTrail;
+import com.plugin.gateway.enums.AuditStorageEngine;
+import com.plugin.gateway.property.AuditConfigurationProperties;
+import com.plugin.gateway.repository.AuditTrailRepository;
+import com.plugin.gateway.trail.model.AuditTrail;
 
 /**
  * @author Sankha

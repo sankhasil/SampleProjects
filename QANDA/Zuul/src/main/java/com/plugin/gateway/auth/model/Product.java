@@ -1,4 +1,4 @@
-package com.sdgt.gateway.auth.model;
+package com.plugin.gateway.auth.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;

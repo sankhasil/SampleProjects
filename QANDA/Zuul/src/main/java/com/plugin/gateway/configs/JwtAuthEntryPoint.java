@@ -1,4 +1,4 @@
-package com.sdgt.gateway.configs;
+package com.plugin.gateway.configs;
 
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.sdgt.gateway.controller;
+package com.plugin.gateway.controller;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,7 +11,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,10 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.sdgt.gateway.enums.AuditStorageEngine;
-import com.sdgt.gateway.property.AuditConfigurationProperties;
-import com.sdgt.gateway.repository.AuditTrailRepository;
-import com.sdgt.gateway.trail.model.AuditTrail;
+import com.plugin.gateway.enums.AuditStorageEngine;
+import com.plugin.gateway.property.AuditConfigurationProperties;
+import com.plugin.gateway.repository.AuditTrailRepository;
+import com.plugin.gateway.trail.model.AuditTrail;
 
 /**
  * @author Sankha
