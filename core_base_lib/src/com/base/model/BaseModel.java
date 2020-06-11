@@ -14,6 +14,7 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 
+import org.bson.types.ObjectId;
 import org.hibernate.annotations.GenericGenerator;
 
 import com.base.enums.Status;
