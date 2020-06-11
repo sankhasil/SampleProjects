@@ -27,16 +27,17 @@ The Base Model for any entity. Has the Audit Trail Data.
 
 ## Vision
 ### Overview
-![Image of Architecture](https://github.com/sankhasil/SampleProjects/blob/master/QANDA/images/overview_ui_to_server.svg)
+
+![Image of Architecture](https://github.com/sankhasil/SampleProjects/blob/develop/QANDA/images/overview_ui_to_server.svg)
 
 ### Gateway 
-![Image of Architecture](https://github.com/sankhasil/SampleProjects/blob/master/QANDA/images/gateway_zuul.svg)
+![Image of Architecture](https://github.com/sankhasil/SampleProjects/blob/develop/QANDA/images/gateway_zuul.svg)
 
 ### Detailed
-![Image of Architecture](https://github.com/sankhasil/SampleProjects/blob/master/QANDA/images/detailed_microservice.svg)
+![Image of Architecture](https://github.com/sankhasil/SampleProjects/blob/develop/QANDA/images/detailed_microservice.svg)
 
 
 ### Repository Interaction
-![Image of Architecture](https://github.com/sankhasil/SampleProjects/blob/master/QANDA/images/repo_layer.svg)
+![Image of Architecture](https://github.com/sankhasil/SampleProjects/blob/develop/QANDA/images/repo_layer.svg)
 
 
