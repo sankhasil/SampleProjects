@@ -40,4 +40,5 @@ The Base Model for any entity. Has the Audit Trail Data.
 ### Repository Interaction
 ![Image of Architecture](https://github.com/sankhasil/SampleProjects/blob/develop/QANDA/images/repo_layer.svg)
 
-
+### Overall Native Cloud 
+![Image of Architecture](https://github.com/sankhasil/SampleProjects/blob/develop/QANDA/images/native-cloud.png)
