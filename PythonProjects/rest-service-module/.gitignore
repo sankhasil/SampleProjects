@@ -1,0 +1,21 @@
+# Build and cache related files.
+__pycache__/
+*.egg-info/
+build/
+dist/
+.mypy_cache/
+.tox/
+.coverage/
+*eggs/
+*isort*
+*ipynb*
+
+**/version.py
+
+# Coverage related files
+.coverage
+.pytest_cache/
+coverage-reports/
+htmlcov/
+.ipynb_checkpoints/
+.vscode/

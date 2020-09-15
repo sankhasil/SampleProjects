@@ -1,0 +1,60 @@
+image: python:3.8
+
+options:
+  docker: true
+
+definitions:
+  caches:
+    sonar: ~/.sonar/cache
+  steps:
+  - step: &publish
+      name: Creates a distribution of the package and uploads to our PyPI server
+      script:
+      - pip install twine
+      - python setup.py sdist
+      - twine upload --repository-url https://$PYPI_URL --username $PYPI_USER --password
+        $PYPI_PASSWORD dist/*
+  - step: &upload-docker-image
+      name: Build and tag the docker image, then push it to the docker registry
+      size: 2x
+      caches:
+      - docker
+      script:
+      - pipe: docker://${DOCKER_HUB_USER}/upload-docker-image:latest
+        variables:
+          DOCKER_REG_URL: $DOCKER_REG_URL
+          DOCKER_REG_USER: $DOCKER_REG_USER
+          DOCKER_REG_PASS: $DOCKER_REG_PASS
+          IMAGE_TAG: $IMAGE_TAG
+          DOCKER_BUILD_OPTIONS: "--build-arg PIP_EXTRA_INDEX_URL=$PIP_EXTRA_INDEX_URL"
+  - step: &tox
+      name: Automated tests and code checking
+      script:
+      - apt update && apt upgrade -y && apt install openjdk-11-jre -y --no-install-recommends
+      - pip install tox
+      - tox
+  - step: &build-sonarcloud
+      name: Run tests coverage and Build/test/analyze on SonarCloud
+      script:
+      - apt update && apt upgrade -y && apt install openjdk-11-jre -y --no-install-recommends
+      - pip install tox
+      - tox -e coverage
+      - pipe: sonarsource/sonarcloud-scan:1.0.1
+        variables:
+          SONAR_SCANNER_OPTS: -Xmx512m
+      - pipe: sonarsource/sonarcloud-quality-gate:0.1.3
+
+pipelines:
+  branches:
+    develop:
+      - step: *publish
+    master:
+      - step: *build-sonarcloud
+  pull-requests:
+    '**':
+    - step: *tox
+    - step: *build-sonarcloud
+  tags:
+    v*.*.*:
+    - step: *publish
+    - step: *upload-docker-image
