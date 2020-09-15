@@ -1,0 +1,121 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Image Extraction API
+  description: Image Extraction from Pdf, Archives
+  contact:
+    name: Sankha Sil
+    email: sankha.sil@ai4bd.com
+    url: https://ai4bd.com
+paths:
+  /ping:
+    get:
+      tags:
+        - Image Extraction API
+      summary: "Call Ping service to health check."
+      description: Ping Service to check if RestAPI works. Can also be used for health check
+      responses:
+        '200':
+          description: Sucess response, OK
+          content:
+            application/json:
+              schema:
+                title: Sample
+                type: object
+                format: json
+                example: Pong!!
+  /get/{uuid}:
+    get:
+      tags:
+        - Image Extraction API
+      summary: "Get the processed png files"
+      parameters:
+        - $ref: '#/components/parameters/UUIDInPath'
+      responses:  
+        '200':
+          description: Success response returns the pre processed zip as byte array.
+          content:
+            application/zip:
+              schema:
+                type: object
+                
+        
+  /extract:
+    post:
+      tags: 
+        - Image Extraction API
+      summary: "Call process service to process documents  for extract into png."
+      description: Process document for extract image as png.
+      parameters:
+        - $ref: '#/components/parameters/socket-client-id'
+        - $ref: '#/components/parameters/meta'
+      requestBody:
+        content:
+          application/pdf: 
+            schema:
+              type: object
+              format: binary
+          application/zip: 
+            schema:
+              type: object
+              format: binary
+          application/tar: 
+            schema:
+              type: object
+              format: binary
+          application/rar:
+            schema:
+              type: object
+              format: binary
+      responses:
+        '200':
+          description: Success response returns a zip archive of extracted images in png
+          headers:
+            content-type:
+              schema:
+                type: object
+              description: application/zip
+          content:
+            application/zip:
+              schema:
+                type: object
+                format: binary
+                example: "{\"id\": \"0ef90871-c72b-411e-9e71-d8fc22b967ce\",\"status\": \"InProgress\",\"responseType\": null, \"content\": null }"
+                
+        '400':
+          description: Bad request. E.g., no header values provided
+        
+        '412':
+          description: File corrupted exception
+        '500':
+          description: Some internal error happend
+    
+          
+          
+          
+components:
+  parameters:
+    socket-client-id:
+      name: socket-client-id
+      in: header
+      description: socket client id which is used for socket connection.
+      required: false
+      schema:
+        type: string
+        example: "0ef90871-c72b-411e-9e71-d8fc22b967ce"
+    meta:
+      name: meta
+      in: header
+      description: meta information for image to be extracted.
+      required: false
+      schema:
+        type: string
+        default: null
+        example: some values    
+    UUIDInPath:
+      name: uuid
+      description: UUID of a single item of the resource.
+      in: path
+      required: true
+      schema:
+        type: string

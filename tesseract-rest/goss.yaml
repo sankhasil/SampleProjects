@@ -1,0 +1,8 @@
+
+http:
+  http://localhost:4585/tesseract/ping/:
+    status: 200
+    no-follow-redirects: false
+    timeout: 1000
+    skip: false
+    

@@ -1,0 +1,55 @@
+image: maven:3.6.3-openjdk-11
+
+clone:
+  depth: full              # SonarCloud scanner needs the full history to assign issues properly
+
+definitions:
+  caches:
+    sonar: ~/.sonar/cache  # Caching SonarCloud artifacts will speed up your build
+
+  steps:
+   - step: &upload-image-to-harbor
+          name: Build and tag the docker image, then push it to the docker registry
+          caches:
+          - docker
+          script:
+          - pipe: docker://${DOCKER_HUB_USER}/upload-docker-image:latest
+            variables:
+              DOCKER_REG_URL: $DOCKER_REG_URL
+              DOCKER_REG_USER: $DOCKER_REG_USER
+              DOCKER_REG_PASS: $DOCKER_REG_PASS
+
+   - step: &build-test-sonarcloud
+        name: Build, test and analyze on SonarCloud
+        caches:
+          - maven
+          - sonar
+        script:
+          - mvn -B org.jacoco:jacoco-maven-plugin:prepare-agent verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        artifacts:
+          - target/*.jar  
+
+   - step: &service-build
+        name: maven build
+        caches:
+          - maven
+        script:
+          - mvn clean install
+        artifacts:
+          - target/*.jar
+
+pipelines:
+  pull-requests:
+    '**':
+      - step: *build-test-sonarcloud
+  branches:
+    '**':
+      - step: *service-build
+      - step: *build-test-sonarcloud
+  tags:
+    'v*.*.*':
+      - step: *upload-image-to-harbor
+  
+
+options:
+  docker: true

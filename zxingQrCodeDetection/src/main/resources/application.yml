@@ -1,0 +1,39 @@
+spring:
+  thymeleaf:
+    cache: false
+  main:
+    show-banner: false
+  application:
+    name: code-detect-service
+
+server:
+  port: 4687
+
+
+logging:
+  file: ./log/codeDetectService.log
+  level:
+    jdbc:
+      sqltiming: DEBUG
+      resultsettable: DEBUG
+
+info:
+  app:
+    encoding: '@project.build.sourceEncoding@'
+    java:
+      source: '@java.version@'
+      target: '@java.version@'
+    name: Code detect Service
+    description: qr code, bar code
+    version: 1.2.3
+    
+  
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics, auditevents
+  endpoint:
+    health:
+      show-details: always
+      show-components: always      

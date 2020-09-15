@@ -1,0 +1,27 @@
+{
+    "name": "tdd-example",
+    "version": "1.0.0",
+    "description": "some examples for test driven development",
+    "main": "index.js",
+    "scripts": {
+        "test": "jest"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://bitbucket.org/ground4play/tdd_examples.git"
+    },
+    "keywords": [
+        "js",
+        "javascript",
+        "tdd",
+        "jest",
+        "unit",
+        "test"
+    ],
+    "author": "4gray",
+    "license": "ISC",
+    "homepage": "https://bitbucket.org/ground4play/tdd_examples",
+    "devDependencies": {
+        "jest": "^26.0.1"
+    }
+}

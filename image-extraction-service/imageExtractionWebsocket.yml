@@ -1,0 +1,60 @@
+asyncapi: 2.0.0
+info:
+  title: Extract Image Socket
+  version: '1.0.0'
+  description: |
+    The Api is to publish/push the processed image(s) as continous socket message untill all extracted image(s) are pushed.
+    
+servers:
+  production:
+    url: ws://{hostname}:{port}/extract-image
+    protocol: Websocket
+    description: Websocket for Extract Image
+    variables:
+      hostname:
+        description: connection available through host server where service is running
+        default: 'localhost'
+        enum:
+          - 'localhost'
+      port:
+        description: connection available through port 5458.
+        default: '5458'
+defaultContentType: application/json
+
+channels:
+  /output:
+    description: The topic on which measured values may be produced and consumed.
+    subscribe:
+      summary: Receive information as socket message of extracted image(s) in png.
+      message:
+        $ref: '#/components/messages/image'
+
+  /user/output:
+    description: The user specific topic on which measured values may be produced and consumed.
+    subscribe:
+      summary: Receive information as socket message of extracted image(s) in png.
+      message:
+        $ref: '#/components/messages/image'
+
+components:
+  messages:
+    image:
+      name: image
+      title: Image Extracted.
+      summary: From pdf/zip/tar/tiff the images are extracted into single image png file(s). They are pushed to socket. If the parent document has more than one page in it, then multiple image packets are pushed until reaches the end page.
+      contentType: text/octate-stream
+      payload:
+        schema:
+        example: {
+                jobId: "0ef90871-c72b-411e-9e71-d8fc22b967ce",
+                documentName: "temp_0ef90871-c72b-411e-9e71-d8fc22b967ce.pdf",
+                documentPath: "folder_one/temp_0ef90871",
+                pageFileName: "temp_0ef90871-c72b-411e-9e71-d8fc22b967ce_0.png",
+                pageCount: 32,
+                pageIndex: 0,
+                pageWidth: 800,
+                pageHeight: 200,
+                pageContent: "iVBORw0KGgoAAAANSUhEUgAABnUAAAkiCAIAAACTwI40...",
+                documentCount: 1,
+                documentIndex: 0
+                }

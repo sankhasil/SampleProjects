@@ -1,0 +1,39 @@
+spring:
+  thymeleaf:
+    cache: false
+  main:
+    show-banner: false
+  application:
+    name: tesseract-service
+
+server:
+  port: 4585
+
+
+logging:
+  file: ./log/tesseractService.log
+  level:
+    jdbc:
+      sqltiming: DEBUG
+      resultsettable: DEBUG
+
+info:
+  app:
+    encoding: '@project.build.sourceEncoding@'
+    java:
+      source: '@java.version@'
+      target: '@java.version@'
+    name: Tesseract Service
+    description: Tesseract is a Optical Character Recognition tool. This service is a wrapper over the tesseract and provides REST edpoints to use the service.
+    version: 1.2.3
+    
+  
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics, auditevents
+  endpoint:
+    health:
+      show-details: always
+      show-components: always      

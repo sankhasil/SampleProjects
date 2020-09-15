@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  image-extraction-rest:
+    restart: always
+    container_name: image_extraction_rest
+    image: dockers1.ai4bd.org/ai4bd/image-extraction-service:latest
+    ports:
+      - 5458-5460:5458
+    environment:
+      - WEB_SOCKET_SEND_BUFFER_LIMIT=1024*1024*1024
+      - WEB_SOCKET_MESSAGE_LIMIT=1024*1024
+      - WEB_SOCKET_SEND_TIME_LIMIT=60*60*1000
+

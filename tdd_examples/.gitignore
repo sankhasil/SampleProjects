@@ -1,0 +1,10 @@
+.idea/
+**/target/
+*.iml
+.project
+.settings
+.classpath
+log/
+*.log
+TempFolder
+__pycache__

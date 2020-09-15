@@ -1,0 +1,56 @@
+spring:
+  thymeleaf:
+    cache: false
+  main:
+    show-banner: false
+  application:
+    name: image-extraction-service
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false    
+
+server:
+  port: 5458
+
+
+logging:
+  file: ./log/imageExtractionService.log
+  level:
+    jdbc:
+      sqltiming: DEBUG
+      resultsettable: DEBUG
+
+info:
+  app:
+    encoding: '@project.build.sourceEncoding@'
+    java:
+      source: '@java.version@'
+      target: '@java.version@'
+    name: Image Extraction Service
+    description: Image extraction is to extract .png images from PDF,Archives.
+    version: 1.0.0
+    
+  
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics, auditevents
+  endpoint:
+    health:
+      show-details: always
+      show-components: always  
+      
+communication:
+  protocol:
+    websocketUsage: true
+    hazelcastUsage: false
+
+    
+connection:
+  hazelcast:
+    remote:
+      address: 127.0.0.1:5407,127.0.0.1:5407
+  map: image-extraction        
+
+NOTIFICATION_STRATEGY: socket  

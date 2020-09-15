@@ -1,0 +1,92 @@
+image: ubuntu:18.04
+
+clone:
+  depth: full              # SonarCloud scanner needs the full history to assign issues properly
+
+definitions:
+  caches:
+    sonar: ~/.sonar/cache  # Caching SonarCloud artifacts will speed up your build
+  steps:
+   - step: &upload-image-to-harbor
+          name: Build and tag the docker image, then push it to the docker registry
+          caches:
+          - docker
+          script:
+          - pipe: docker://${DOCKER_HUB_USER}/upload-docker-image:latest
+            variables:
+              DOCKER_REG_URL: $DOCKER_REG_URL
+              DOCKER_REG_USER: $DOCKER_REG_USER
+              DOCKER_REG_PASS: $DOCKER_REG_PASS
+              DOCKER_BUILD_OPTIONS: "--build-arg ARTIFACTORY_USER=$ARTIFACTORY_USER --build-arg ARTIFACTORY_PASSWORD=$ARTIFACTORY_PASSWORD"
+   - step: &upload-artifact
+        name: Copy generated artifact to the server
+        script:
+          - apt-get update && apt-get install -y ssh
+          - ssh-keyscan -H $IP_AXINO >> ~/.ssh/known_hosts
+          - ssh-keyscan -H $IP_POCPTT >> ~/.ssh/known_hosts
+          - echo $REPO_KEY_PRIVATE > ~/.ssh/id_rsa.tmp
+          - base64 -d ~/.ssh/id_rsa.tmp > ~/.ssh/id_rsa
+          - chmod 600 ~/.ssh/id_rsa
+          - scp target/*.jar ai4bd@148.251.52.117:/var/www/download.ai4bd.org/tesseract-rest/
+   - step: &build-test-sonarcloud
+        name: Build, test and analyze on SonarCloud
+        caches:
+          - maven
+          - sonar
+        script:
+          - if [ ! -d /usr/share/man/man1 ]; then 
+          - mkdir -p /usr/share/man/man1;
+          - fi;
+          - apt-get update
+          - apt-get install -y tesseract-ocr-all git openjdk-8-jdk maven
+          - update-alternatives --get-selections | awk -v home="$(readlink -f "$JAVA_HOME")" 'index($3, home) == 1 { $2 = "manual"; print | "update-alternatives --set-selections" }';
+          - mvn -version
+          - git submodule update --init
+          - mkdir -p /home/sanky && cd $_
+          - git clone https://github.com/tesseract-ocr/tessdata_best.git
+          - export TESSDATA_PREFIX="/home/sanky/tessdata_best"
+          - cd -
+          - mvn -B org.jacoco:jacoco-maven-plugin:prepare-agent verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        artifacts:
+          - target/*.jar  
+
+   - step: &service-build
+        name: maven build
+        caches:
+          - maven
+        script:
+          - if [ ! -d /usr/share/man/man1 ]; then 
+          - mkdir -p /usr/share/man/man1;
+          - fi;
+          - apt-get update
+          - apt-get install -y tesseract-ocr-all git openjdk-8-jdk maven
+          - update-alternatives --get-selections | awk -v home="$(readlink -f "$JAVA_HOME")" 'index($3, home) == 1 { $2 = "manual"; print | "update-alternatives --set-selections" }';
+          - mvn -version
+          - mkdir -p /home/sanky && cd $_
+          - git clone https://github.com/tesseract-ocr/tessdata_best.git
+          - export TESSDATA_PREFIX="/home/sanky/tessdata_best"
+          - cd -
+          - mvn clean install
+        artifacts:
+          - target/*.jar
+
+pipelines:
+  pull-requests:
+    '**':
+      - step: *build-test-sonarcloud
+  branches:
+    '*/*':
+      - step: *service-build
+    develop:
+      - step: *service-build
+      - step: *upload-artifact
+    master:
+      - step: *service-build
+      - step: *upload-artifact
+  tags:
+    'v*.*.*':
+      - step: *upload-image-to-harbor
+  
+
+options:
+  docker: true
