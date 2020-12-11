@@ -1,0 +1,6 @@
+pytest
+pytest-datadir
+pytest-mock
+pytest-bdd
+requests
+.[service]

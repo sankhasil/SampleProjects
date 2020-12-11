@@ -1,0 +1,9 @@
+.gitignore
+README.md
+setup.cfg
+setup.py
+src/pymongowatch.egg-info/PKG-INFO
+src/pymongowatch.egg-info/SOURCES.txt
+src/pymongowatch.egg-info/dependency_links.txt
+src/pymongowatch.egg-info/requires.txt
+src/pymongowatch.egg-info/top_level.txt

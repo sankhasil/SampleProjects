@@ -219,9 +219,10 @@ public final class CommonUtils {
    * @return File path until last "/"
    */
   public static String getFilePath(String fileName) {
+    if (StringUtils.containsNone(fileName, '/')) {
+      return ".";
+    }
     String extension = StringUtils.substringBeforeLast(fileName, "/");
-    return StringUtils.isNotBlank(extension) && StringUtils.containsNone(extension, '.')
-        ? extension
-        : ".";
+    return StringUtils.isNotBlank(extension) ? extension : ".";
   }
 }

@@ -9,7 +9,7 @@
 	<version>1.0</version>
 	<packaging>jar</packaging>
 
-	<name>Spring Boot Image Extraction Rest API</name>
+	<name>Image Extraction Restful API</name>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>

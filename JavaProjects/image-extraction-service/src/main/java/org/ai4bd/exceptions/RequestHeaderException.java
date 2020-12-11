@@ -5,9 +5,6 @@ package org.ai4bd.exceptions;
 public class RequestHeaderException extends RuntimeException {
 
   /** */
-  private static final long serialVersionUID = 7371238113083942223L;
-
-  /** */
   public RequestHeaderException() {
     super();
   }

@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: pymongowatch
+Version: 0.0.0
+Summary: Python Mongo Watch.
+Home-page: UNKNOWN
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Provides-Extra: tests
+Provides-Extra: develop
+Provides-Extra: service

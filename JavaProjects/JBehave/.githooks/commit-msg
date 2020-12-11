@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# configure the commit messages
+types=("build" "ci" "docs" "feat" "fix" "perf" "refactor" "style" "test" "chore")
+min_length=1
+max_length=72
+
+# build the regex pattern based on the config
+function build_regex() {
+
+  regexp="^("
+
+  for type in "${types[@]}"
+  do
+    regexp="${regexp}$type|"
+  done
+
+  regexp=${regexp::-1} # delete trailing "|"
+
+  regexp="${regexp})(\(.+\))?: " # add optional scope
+
+  regexp="${regexp}.{$min_length,$max_length}$" # set required length
+}
+
+# Print out a standard error message which explains how the commit message should be structured
+function print_error() {
+  echo -e "\n\e[1m\e[31m[INVALID COMMIT MESSAGE]"
+  echo -e "------------------------\033[0m\e[0m"
+  echo -e "\e[1mValid types:\e[0m \e[34m${types[@]}\033[0m"
+  echo -e "\e[1mMax length (first line):\e[0m \e[34m$max_length\033[0m"
+  echo -e "\e[1mMin length (first line):\e[0m \e[34m$min_length\033[0m"
+  echo -e "\e[1mMust match regexp:\e[0m \e[34m$regexp\033[0m\n"
+}
+
+# get the first line of the commit message
+INPUT_FILE=$1
+START_LINE=`head -n1 $INPUT_FILE`
+
+# create the regex to check against
+build_regex
+
+# ensure the commit message matches the requirements
+if [[ ! $START_LINE =~ $regexp ]]; then
+  # commit message is invalid according to config - block commit
+  print_error
+  exit 1
+fi

@@ -4,7 +4,8 @@ import logging
 import click
 
 import aiqcheck.detector.qr as datacode_detector
-import aiqcheck.service.app as aiq_service
+
+# import aiqcheck.service.app as aiq_service
 
 
 def configure_logging() -> None:
@@ -62,7 +63,9 @@ def entry_point():
 )
 def service(port) -> None:
     """Start the service in port provided in argument, default is 5000."""
-    aiq_service.start_debug_service(port=port)
+    import aiqcheck.service.app  # pylint: disable=import-outside-toplevel
+
+    aiqcheck.service.app.start_debug_service(port=port)
 
 
 @entry_point.command(help="Image file for detect and extract qr code.")

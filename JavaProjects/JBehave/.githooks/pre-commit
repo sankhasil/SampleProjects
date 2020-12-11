@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# get which files are partially and which are fully staged
+partially_staged_files=$(comm -12 <(sort <(echo "`git diff --name-only`")) <(sort <(echo "`git diff --name-only --staged`")))
+fully_staged_files=$(comm -13 <(sort <(echo "`git diff --name-only`")) <(sort <(echo "`git diff --name-only --staged`")))
+
+# run the google code formatter for fully staged files, add the new formatting to this commit
+if [[ ! -z "$fully_staged_files" ]]
+then
+    java -jar .githooks/google-java-format-1.7-all-deps.jar --replace `echo $fully_staged_files`
+    git add `echo $fully_staged_files`
+    echo "INFO: The following files may have been auto-formatted, possible changes will be committed."
+    echo "$fully_staged_files"
+    echo;
+fi
+
+# run the google code formatter for partially staged files, warn that they got formatted but not staged again
+if [[ ! -z "$partially_staged_files" ]]
+then
+    java -jar .githooks/google-java-format-1.7-all-deps.jar --replace `echo $partially_staged_files`
+    echo "WARN: The following files may have been auto-formatted but not re-staged, since they included partial changes."
+    echo "WARN: You must commit the correctly formatted lines / hunks of your changes in a new commit."
+    echo "$partially_staged_files"
+    echo;
+fi

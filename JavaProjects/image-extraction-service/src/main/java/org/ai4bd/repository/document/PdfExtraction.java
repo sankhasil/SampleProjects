@@ -23,6 +23,7 @@ import org.springframework.util.Base64Utils;
 @Repository("pdf")
 public class PdfExtraction implements DocumentStrategy {
 
+  private static final int IMAGE_DPI = 200;
   @Autowired BeanFactory beanFactory;
   @Autowired ExtractionRepository extractionRepository;
 
@@ -49,7 +50,7 @@ public class PdfExtraction implements DocumentStrategy {
                   + CommonConstants.OUTPUT_EXTENSION;
           // 200 is sample dots per inch.
           // if necessary, change 200 into another integer.
-          BufferedImage image = renderer.renderImageWithDPI(i, 200);
+          BufferedImage image = renderer.renderImageWithDPI(i, IMAGE_DPI);
           ByteArrayOutputStream os = new ByteArrayOutputStream();
           ImageIO.write(image, CommonConstants.OUTPUT_EXTENSION.toUpperCase(), os);
           notificationMessageObject
@@ -64,6 +65,7 @@ public class PdfExtraction implements DocumentStrategy {
 
           notifyBean.notify(currentObject.getSocketConnectionID(), notificationMessageObject);
         } catch (Exception e) {
+          LOGGER.error("Exception in pdf to image conversion {}", e.getMessage());
           notificationMessageObject.pageContent(StringUtils.EMPTY);
           notifyBean.notify(currentObject.getSocketConnectionID(), notificationMessageObject);
         }

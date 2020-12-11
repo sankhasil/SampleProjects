@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping(value = "/")
 public class ImageExtractionController {
-  private Logger controllerLogger = LoggerFactory.getLogger(this.getClass());
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImageExtractionController.class);
 
   @Autowired private ImageExtractionService imageExtractionService;
 
@@ -132,8 +132,7 @@ public class ImageExtractionController {
       throws CloneNotSupportedException, JsonProcessingException {
     ExtractionMessage outputObject = resultObject.clone();
     if (imageExtractionService.removeExtractionDataById(outputObject.getId())) {
-      controllerLogger.debug(
-          outputObject.getId().toString() + " is removed from internal storage.");
+      LOGGER.info("{0} is removed from internal storage.", outputObject.getId());
     }
     ObjectMapper mapper = new ObjectMapper();
     if (outputObject.getStatus().equalsIgnoreCase("done")) {

@@ -25,7 +25,7 @@ public class TiffExtraction implements DocumentStrategy {
   @Autowired private BeanFactory beanFactory;
   @Autowired private ExtractionRepository extractionRepository;
 
-  private final Logger LOGGER = LoggerFactory.getLogger(TiffExtraction.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TiffExtraction.class);
 
   @Override
   public void extract(byte[] content, NotificationMessage notificationMessageObject) {

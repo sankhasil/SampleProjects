@@ -22,7 +22,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class ApplicationControllerExceptionHandler {
 
   private static final String ERROR = "error";
-  Logger adviceLogger = LoggerFactory.getLogger(ApplicationControllerExceptionHandler.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(ApplicationControllerExceptionHandler.class);
 
   @ExceptionHandler({
     NumberFormatException.class,
@@ -34,7 +35,7 @@ public class ApplicationControllerExceptionHandler {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
   String exceptionAdviceBadRequestHandler(RuntimeException e) {
-    adviceLogger.error(ExceptionUtils.getStackTrace(e));
+    LOGGER.error(ExceptionUtils.getStackTrace(e));
     return new JSONObject().put(ERROR, e.getLocalizedMessage()).toString();
   }
 
@@ -42,7 +43,7 @@ public class ApplicationControllerExceptionHandler {
   @ResponseStatus(HttpStatus.PRECONDITION_FAILED)
   @ResponseBody
   String exceptionAdvicePreConditionFailedHandler(RuntimeException e) {
-    adviceLogger.error(ExceptionUtils.getStackTrace(e));
+    LOGGER.error(ExceptionUtils.getStackTrace(e));
     return new JSONObject().put(ERROR, e.getLocalizedMessage()).toString();
   }
 
@@ -55,7 +56,7 @@ public class ApplicationControllerExceptionHandler {
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
   String exceptionAdviceInternalServerErrorHandler(Exception e) {
-    adviceLogger.error(ExceptionUtils.getStackTrace(e));
+    LOGGER.error(ExceptionUtils.getStackTrace(e));
     return new JSONObject().put(ERROR, e.getLocalizedMessage()).toString();
   }
 }

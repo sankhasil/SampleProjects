@@ -1,0 +1,34 @@
+pipeline {
+  agent none
+  
+  stages {
+     stage('CI Test | Java'){
+      agent {
+       docker {
+          image 'maven:3-jdk-11'
+          args '-u0'
+        }
+      }
+      environment {
+       AUTHORIZATION_CREDS = credentials('sso-authorization-credential')
+      }  
+      steps{
+        sh 'useradd -u 1000 tester'
+        sh 'chown -R tester:tester .'
+        sh 'su -m tester -c "mkdir -p tests"'
+        dir('tests'){
+          git branch: 'master',credentialsId: 'cac1e008-ac80-42e1-83ae-fc1dc1728e82', changelog: false, poll: false, url: 'https://bitbucket.org/ai4bd/ci-tests.git'
+          sh "cd Java_Based && su -m tester -c \"mvn -U -Dmaven.repo.local=${env.HUDSON_HOME}/.m2/repository clean test\"" 
+        }
+        
+      }
+    }
+  }
+  post{
+    always{
+      node(null){
+        cleanWs(cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenSuccess: true, cleanWhenNotBuilt: true, cleanWhenUnstable: true, deleteDirs: true, disableDeferredWipeout: true)
+      }
+    }
+  }
+}

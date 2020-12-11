@@ -35,7 +35,7 @@ public class SocketNotification implements NotificationStrategy {
 
   @EventListener
   public void handleSessionConnectedEvent(SessionConnectedEvent event) {
-    if (event.getUser() != null) {
+    if (event != null && event.getUser() != null) {
       this.connectedUserList.add(UUID.fromString(event.getUser().getName()));
     }
   }

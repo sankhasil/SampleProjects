@@ -16,6 +16,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Profile("!test")
 public class AsyncConfiguration {
 
+  private static final int DEFAULT_QUEUE_SIZE = 1000;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AsyncConfiguration.class);
 
   @Value("${IMAGE_EXTRACTION_QUEUE_SIZE:10000}")
@@ -33,9 +35,9 @@ public class AsyncConfiguration {
       queueSize = Integer.parseInt(queueSizeEnv);
     } catch (NumberFormatException e) {
       LOGGER.debug(
-          "Error while parsing \"IMAGE_EXTRACTION_QUEUE_SIZE\" environment variable or Property. Defaulting "
-              + "to queue size \"10000\"");
-      queueSize = 1000;
+          "Error while parsing \"IMAGE_EXTRACTION_QUEUE_SIZE\" environment variable or Property. Defaulting to queue size \"{}\"",
+          DEFAULT_QUEUE_SIZE);
+      queueSize = DEFAULT_QUEUE_SIZE;
     }
 
     final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

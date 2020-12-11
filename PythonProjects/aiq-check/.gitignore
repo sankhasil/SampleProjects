@@ -27,3 +27,6 @@ version.py
 
 # Notebook files
 .ipynb_*
+
+# .idea
+.idea/
