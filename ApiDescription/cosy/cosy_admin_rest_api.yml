@@ -1,0 +1,45 @@
+openapi: "3.0.3"
+info:
+  version: 0.0.2
+  title: COSY Admin API
+  description: COSY Admin API for updating flows and more.
+  contact:
+    name: Alexander Naumenko
+    email: alexander.naumenko@ai4bd.com
+    url: https://red.ai4bd.org:8087
+paths:
+  /admin/update:
+    get:
+      description: Endpoint to trigger a flow update procedure
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer token for authentication and authorization 
+          required: true
+          schema:
+            type: string
+        - name: bucketId
+          in: header
+          description: Specifies the bucket from which the flow can be read 
+          required: true
+          schema:
+            type: string
+        - name: flowId
+          in: header
+          description: Specifies the flow which should be updated
+          required: true
+          schema:
+            type: string
+        - name: flowVersion
+          in: header
+          description: Specifies to which version the flow should be updated
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success response that the flow was updated successfully
+        '404':
+          description: Response in case someone uses a not excepted method / endpoint or is unauthorized to call this endpoint 
+        '500':
+          description: Something went wrong

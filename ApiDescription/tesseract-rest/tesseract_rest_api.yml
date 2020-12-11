@@ -1,0 +1,343 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Tesseract-RestAPI
+  description: Optical Character Recognition for Images(png,tiff,jpg)
+  contact:
+    name: Alexander Naumenko, Sankha Sil
+    email: alexander.naumenko@ai4bd.com
+    url: https://ai4bd.com
+paths:
+  /tesseract/ping:
+    get:
+      tags:
+        - Tesseract API
+      summary: "Call Ping service to health check."
+      description: Ping Service to check if RestAPI works. Can also be used for health check
+      responses:
+        '200':
+          description: Sucess response, OK
+          content:
+            application/json:
+              schema:
+                title: Sample
+                type: object
+                format: json
+                example: Pong!!
+  /tesseract/process:
+    post:
+      tags: 
+        - Tesseract API
+      summary: "Call process service to process image for ocr results"
+      description: Process image for OCR to extract text.
+      parameters:
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/psm'
+      requestBody:
+        content:
+          image/png: 
+            schema:
+              type: string
+              format: binary
+          image/jpg: 
+            schema:
+              type: string
+              format: binary
+          image/tiff: 
+            schema:
+              type: string
+              format: binary    
+      responses:
+        '200':
+          description: Success response returning the text content of image
+          headers:
+            content-type:
+              schema:
+                type: object
+              description: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+                format: json
+                example: "{\n'text': 'Berqghotel\n\nGrosse Scheideqg\n3818 Grindelwald\n\nFamilie R.Miller\n\nRech. Nr. 4572 30,07.2007/13:29: 17\nBar Tisch 7/01\n\n2xLatte Macchiato 4,50 CHF 9.00\n1xG1ok 5.00 CHF 5.00\n1xSchweinschnitzel 22.00 CHF 22.00\n1xChésspatz |i 18.50\n\nTotal : CHF\n\nIncl. 7.64 MwSt 54.50 CHF: 3.85\n\nEntspricht in Euro 36.33 EUR\nEs bediente Sie: Ursula\n\nMwSt Nr. : 430 234\nTel. : 033 853 67 16\nFax. : 033 853 67 19\nE-mail: grossescheidegg@hluewin. ch \n'}"
+        '400':
+          description: Bad request. E.g., no header values provided
+        '406':
+          description: Language Code,PSM Not Supported Exception
+        '412':
+          description: Tesseract Exception - tesseract not functioning, Precondition failed.
+        '500':
+          description: Some internal error happend
+  /tesseract/process-with-annotations:
+    post:
+      tags: 
+        - Tesseract API
+      summary: "Call process service with annotation to process image for ocr results"
+      description: Process image for OCR to extract text and annotation with confidence.
+      parameters:
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/psm'
+        - name: confidence
+          in: header
+          description: page segmentation mode to recognize the text content in image.
+          required: true
+          schema:
+            type: integer
+          example: 5.2       
+      requestBody:
+        content:
+          image/png: 
+            schema:
+              type: string
+              format: binary
+          image/jpg: 
+            schema:
+              type: string
+              format: binary
+          image/tiff: 
+            schema:
+              type: string
+              format: binary    
+      responses:
+        '200':
+          description: Success response returning the text content of image
+          headers:
+            content-type:
+              schema:
+                type: object
+              description: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+                format: json
+                example: "{\n'text': 'Berqghotel\n\nGrosse Scheideqg\n3818 Grindelwald\n\nFamilie R.Miller\n\nRech. Nr. 4572 30,07.2007/13:29: 17\nBar Tisch 7/01\n\n2xLatte Macchiato 4,50 CHF 9.00\n1xG1ok 5.00 CHF 5.00\n1xSchweinschnitzel 22.00 CHF 22.00\n1xChésspatz |i 18.50\n\nTotal : CHF\n\nIncl. 7.64 MwSt 54.50 CHF: 3.85\n\nEntspricht in Euro 36.33 EUR\nEs bediente Sie: Ursula\n\nMwSt Nr. : 430 234\nTel. : 033 853 67 16\nFax. : 033 853 67 19\nE-mail: grossescheidegg@hluewin. ch \n'},\n
+                   'annotations': [{
+            'confidence': '0.0',
+            'text': 'Rech.',
+            'annotationStart': '67',
+            'annotationEnd': '72'
+        },
+        {
+            'confidence': '0.0',
+            'text': 'Nr.',
+            'annotationStart': '73',
+            'annotationEnd': '76'
+        }]"
+        '400':
+          description: Bad request. E.g., no header values provided
+        '406':
+          description: Language Code,PSM Not Supported Exception  
+        '412':
+          description: Tesseract Exception - tesseract not functioning, Precondition failed.  
+        '500':
+          description: Some internal error happend
+  /tesseract/process-for-snippet:
+    post:
+      tags: 
+        - Tesseract API
+      summary: "Call process service with snippet dimensions to process part of image for ocr results"
+      description: Process partial image for OCR to extract text.
+      parameters:
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/psm'
+        - name: originX
+          in: header
+          description: origin x cordinates position for cropping
+          required: true
+          schema:
+            type: integer
+          example: 0
+        - name: originY
+          in: header
+          description: origin y cordinates position for cropping
+          required: true
+          schema:
+            type: integer
+          example: 0 
+        - name: width
+          in: header
+          description: width in pixel for cropping
+          required: true
+          schema:
+            type: integer
+          example: 1234   
+        - name: height
+          in: header
+          description: height in pixel for cropping
+          required: true
+          schema:
+            type: integer
+          example: 1356   
+      requestBody:
+        content:
+          image/png: 
+            schema:
+              type: string
+              format: binary
+          image/jpg: 
+            schema:
+              type: string
+              format: binary
+          image/tiff: 
+            schema:
+              type: string
+              format: binary    
+      responses:
+        '200':
+          description: Success response returning the text content of image
+          headers:
+            content-type:
+              schema:
+                type: object
+              description: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+                format: json
+                example: "{\n'text': 'Berqghotel\n\nGrosse Scheideqg\n3818 Grindelwald\n\nFamilie R.Miller\n\nRech. Nr. 4572 30,07.2007/13:29: 17\nBar Tisch 7/01\n\n2xLatte Macchiato 4,50 CHF 9.00\n1xG1ok 5.00 CHF 5.00\n1xSchweinschnitzel 22.00 CHF 22.00\n1xChésspatz |i 18.50\n\nTotal : CHF\n\nIncl. 7.64 MwSt 54.50 CHF: 3.85\n\nEntspricht in Euro 36.33 EUR\nEs bediente Sie: Ursula\n\nMwSt Nr. : 430 234\nTel. : 033 853 67 16\nFax. : 033 853 67 19\nE-mail: grossescheidegg@hluewin. ch \n'}"
+        '400':
+          description: Bad request. E.g., no header values provided
+        '406':
+          description: Language Code,PSM Supported Exception
+        '412':
+          description: Tesseract Exception - tesseract not functioning, Precondition failed.
+        '500':
+          description: Some internal error happend
+  /tesseract/process-for-region-segmentation:
+    post:
+      tags: 
+        - Tesseract API
+      summary: "Call process service for processing bounding boxes"
+      description: Process bounding boxes for image.
+      parameters:
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/psm'
+        - name: pageLevel
+          in: header
+          description: page iteration level
+          required: true
+          schema:
+            type: integer
+            enum: [0,1,2,3,4]
+            format: integer
+            default: 0
+            example: 0 
+      requestBody:
+        content:
+          image/png: 
+            schema:
+              type: string
+              format: binary
+          image/jpg: 
+            schema:
+              type: string
+              format: binary
+          image/tiff: 
+            schema:
+              type: string
+              format: binary    
+      responses:
+        '200':
+          description: Success response returning the text content of image
+          headers:
+            content-type:
+              schema:
+                type: object
+              description: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+                format: json
+                example: "[{\"X\":844,\"Y\":1722,\"height\":66,\"width\":494},{\"X\":423,\"Y\":1322,\"height\":261,\"width\":1440},{\"X\":964,\"Y\":437,\"height\":85,\"width\":459},{\"X\":382,\"Y\":1914,\"height\":65,\"width\":1280},{\"X\":805,\"Y\":532,\"height\":162,\"width\":835},{\"X\":416,\"Y\":1226,\"height\":62,\"width\":1443},{\"X\":380,\"Y\":926,\"height\":171,\"width\":1510},{\"X\":485,\"Y\":2423,\"height\":374,\"width\":1221},{\"X\":374,\"Y\":2119,\"height\":171,\"width\":1113},{\"X\":911,\"Y\":727,\"height\":64,\"width\":560}]"
+        '400':
+          description: Bad request. E.g., no header values provided
+        '406':
+          description: Language Code,PSM and Page Level Not Supported Exception  
+        '412':
+          description: Tesseract Exception - tesseract not functioning, Precondition failed.
+        '500':
+          description: Some internal error happend          
+  /tesseract/process-for-region-segmentation-with-text:
+    post:
+      tags: 
+        - Tesseract API
+      summary: "Call process service for processing bounding boxes with text and confidence"
+      description: Process bounding boxes for image with text.
+      parameters:
+        - $ref: '#/components/parameters/lang'
+        - $ref: '#/components/parameters/psm'
+        - name: pageLevel
+          in: header
+          description: page iteration level
+          required: true
+          schema:
+            type: integer
+            enum: [0,1,2,3,4]
+            format: integer
+            default: 3
+            example: 3 
+      requestBody:
+        content:
+          image/png: 
+            schema:
+              type: string
+              format: binary
+          image/jpg: 
+            schema:
+              type: string
+              format: binary
+          image/tiff: 
+            schema:
+              type: string
+              format: binary    
+      responses:
+        '200':
+          description: Success response returning the text content of image
+          headers:
+            content-type:
+              schema:
+                type: object
+              description: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+                format: json
+                example: "[{\"bbox\":{\"originX\":1384,\"originY\":2119,\"height\":62,\"width\":103},\"content\":\"EUR\",\"confidence\":94.33981323242188},{\"bbox\":{\"originX\":1724,\"originY\":1229,\"height\":59,\"width\":50},\"content\":\"9,\",\"confidence\":90.78504943847656},{\"bbox\":{\"originX\":1794,\"originY\":1228,\"height\":59,\"width\":65},\"content\":\"00\",\"confidence\":94.62824249267578}]"
+        '400':
+          description: Bad request. E.g., no header values provided
+        '406':
+          description: Language Code,PSM and Page Level Not Supported Exception  
+        '412':
+          description: Tesseract Exception - tesseract not functioning, Precondition failed.
+        '500':
+          description: Some internal error happend        
+          
+          
+          
+components:
+  parameters:
+    lang:
+      name: lang
+      in: header
+      description: language of text to be extracted
+      required: true
+      schema:
+        type: string
+        enum: [eng,deu,fra,ita]
+        format: string
+        default: deu
+        example: deu
+    psm:
+      name: psm
+      in: header
+      description: page segmentation mode to recognize the text content in image.
+      required: true
+      schema:
+        type: integer
+        example: 3
+            

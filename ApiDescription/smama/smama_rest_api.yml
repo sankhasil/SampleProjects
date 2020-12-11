@@ -1,0 +1,73 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: SmartMaintenance-RestAPI
+  description: The REST API for Smart Maintenance.
+  contact:
+    name: Timon Faerber
+    email: timon.faerber@ai4bd.com
+    url: https://ai4bd.com
+paths:
+  /smama/sensordata:
+    post:
+      tags:
+        - Smart Maintenance API
+      description: Receiving single sensor value
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              title: Sensor
+              type: array
+              format: json
+              items:
+                type: object
+                properties:
+                  type_id:
+                    type: string
+                    description: ID of sensor
+                  type_name:
+                    type: string
+                    description: Name of sensor
+                  type_unit:
+                    type: string
+                    description: Unit of measurement of temperature
+                  source:
+                    type: string 
+                    description: Source device
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp of sensor value
+                  char_value:
+                    type: string
+                    description: Char value
+                  number_value:
+                    type: number
+                    description: Number value
+                  boolean_value:
+                    type: boolean
+                    description: Boolean value
+              example: [{"type_id":"Sensor1", "type_name":"Temperature Sensor 1", "type_unit":"°C", "source":"Raspy", "created_at":"2020-12-02T14:35:00", "char_value":null, "number_value":14.5, "boolean_value":null},
+                        {"type_id":"Sensor2", "type_name":"Temperature Sensor 2", "type_unit":"°C", "source":"Raspy", "created_at":"2020-12-02T14:35:02", "char_value":null, "number_value":35.1, "boolean_value":null}]
+      responses:
+        '200':
+          description: Success response!
+        '400':
+          description: The request is incorrect. This can be caused by multiple reasons. For example sending the content in an unsupported format or to a path that does not exist!
+        '401':
+          description: Unauthorized access!
+        '403':
+          description: No or incorrect API access key!
+        '405':
+          description: The requested method is not available for this path!
+        '500':
+          description: A failure happens during the request processing!
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - BearerAuth: []

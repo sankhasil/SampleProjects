@@ -1,0 +1,105 @@
+openapi: "3.0.0"
+info:
+  version: 0.0.2
+  title: AIDENT
+  description: AIdentification
+  contact:
+    name: Léo Granger
+    email: leo.granger@ai4bd.com
+    url: https://www.ai4bd.com
+paths:
+  /reload:
+    get:
+      tags:
+        - AIdent
+      description: Reload Processor which is currently attached to the Application
+      responses:
+        '205':
+          description: Reload Completed.
+          content:
+            application/json:
+              schema:
+                type: object
+              example: {"message" : "Reload Complete."}  
+  
+  /predict:
+    get:
+      tags:
+        - AIdent
+      description: Get information about the processed Image
+      parameters:
+        - $ref: '#/components/parameters/request-id'
+      responses:
+        '200':
+          $ref: '#/components/responses/image-info-synchronous'
+
+    post:
+      tags:
+        - AIdent
+      description: | 
+        Returns the result of a classification. The response structure changes based on how the AIdent service is configured.
+        If its configured as Synchronous then the first response option is returned.
+        If its configured as Asynchronous then the second response option is returned.
+      requestBody:
+        content:
+          image/png:
+            schema:
+              type: string
+              format: binary
+      parameters:
+        - in: header
+          name: limit
+          schema:
+            type: integer
+          required: false
+          description: maximum output of predictions (top n)
+      responses:
+       '200':  
+          $ref: '#/components/responses/image-info-asynchronous'
+components:
+  parameters:
+    request-id:
+      name: request-id
+      in: query
+      description: Request id to recieve information about image processed
+      required: true
+      schema:
+        type: string
+        format: string
+        default: uuid
+        example: da9d2398-a73b-4eb3-92cf-4f681d4fda20
+  responses:
+    image-info-synchronous:
+      description: |
+       Success response returning the template name and probability for each
+       template sorted by probability descending.
+      content:
+        application/json:
+          schema:
+            type: object
+            format: binary
+          example: |
+            [
+              {"category": "template-1", "probability": 0.911},
+              {"category": "template-2", "probability": 0.811}
+            ]
+    image-info-asynchronous:
+      description: |
+       If service is in SYNC mode then a success response returning the template name and probability for each template sorted by probability descending is returned.
+       Or if the service is in ASYNC mode, then success response returning the uuid of request processing is returned. This can be used to fetch information of the processing request in get endpoint.
+      content:
+        application/json:
+          schema:
+            type: object
+            format: binary
+          example: |
+            //synchronous mode response
+            [
+              {"category": "template-1", "probability": 0.911},
+              {"category": "template-2", "probability": 0.811}
+            ]
+            
+            //asynchronous mode response
+            {
+              "request-id": "da9d2398-a73b-4eb3-92cf-4f681d4fda20"
+            }

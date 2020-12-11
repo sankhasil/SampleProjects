@@ -1,0 +1,44 @@
+openapi: 3.0.2
+info:
+  version: 2.1.2
+  title: AISIGN SERVICE
+  description: Handwritten Text Recognition
+  contact:
+    name: Bianca Preißler
+    email: bianca.preissler@ai4bd.com
+    url: https://www.ai4bd.com
+paths:
+  /predict:
+    post:
+      description: Receive predicted text with confidence for a given image.
+      requestBody:
+        description: An image including some handwritten font.
+        content:
+          image/png:
+            schema:
+              type: string
+              format: binary
+        required: true
+      responses:
+        '200':
+          description: Success response containing the predicted text and the prediction confidence.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseFormat"
+                type: object
+              example: "{ \"text\": \"some predicted text\", \"confidence\": 0.75 }"
+        '400':
+          description: bad request
+        '500':
+          description: an internal server error happened
+
+components:
+  schemas:
+    ResponseFormat:
+      type: object
+      properties:
+        text:
+          type: string
+        confidence:
+          type: number

@@ -1,0 +1,79 @@
+openapi: "3.0.0"
+info:
+  version: 0.0.1
+  title: AIQ CHECK
+  description: Detecting and extracting QR-codes, data matrices, bar-codes.
+  contact:
+    name: Team IO 
+    email: info@ai4bd.com
+    url: https://www.ai4bd.com
+paths:
+  /extraction:
+    post:
+      description: Start Code extraction
+      requestBody:
+        description: image file
+        content:
+          image/png:
+            schema:
+              type: string
+              format: binary
+        required: true
+      responses:
+        '200':
+          description: success response containing a request id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseFormat"
+              example: "[{\"code_type\":\"QR-Code\",\"confidence\":0.9,\"content\":\"abcMyTemplateId\",   \"position\": [
+      {
+        \"x\": 82.5,
+        \"y\": 98.5
+      },
+      {
+        \"x\": 83.0,
+        \"y\": 74.0
+      },
+      {
+        \"x\": 105.0,
+        \"y\": 75.5
+      }
+    ]},{\"code_type\":\"Data_Matrix\",\"confidence\":0.84,\"content\":\"abcMyTemplateId\",   \"position\": [
+      {
+        \"x\": 82.5,
+        \"y\": 98.5
+      }
+      
+    ]}]"
+        '400':
+          description: bad request, e.g. unsupported image type, empty image file
+        '500':
+          description: an internal server error happened
+components:
+  schemas:
+    ResponseFormat:
+      type: array
+      items:
+        type: object
+        properties:
+          code_type:
+            type: string
+            enum: 
+              - "QR-Code"
+              - "Barcode"
+              - "Data-Matrix"
+          confidence:
+            type: number
+          value:
+            type: string
+          position:
+            type: array
+            items:
+              type: object
+              properties:
+                x:
+                  type: number
+                y:
+                  type: number
+              

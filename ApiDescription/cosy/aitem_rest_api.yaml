@@ -1,0 +1,83 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.2
+  title: AITEM
+  description: Image rectification
+  contact:
+    name: Thaddäus Strobel
+    email: thaddaeus.strobel@ai4bd.com
+    url: https://www.ai4bd.com
+paths:
+  /:
+    rectified:
+      description: Get rectified imagae
+      parameters:
+        - name: request-id
+          in: body
+          description: id of the request
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: success response containing the predicted text and the prediction confidence
+          headers:
+            correction-factor-width:
+              schema:
+                type: float
+            correction-factor-height:
+              schema:
+                type: float
+            match_factor:
+              schema:
+                type: float
+            description: Factor of matched keypoints, higher is better.
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: bad request
+        '404':
+          description: id does not exist
+        '428':
+          description: process not finished
+        '500':
+          description: an internal server error happened
+    image:
+      description: Send image to be rectified
+      parameters:
+        - name: Content-Type
+          in: header
+          description: type of the image content
+          required: true
+          schema:
+            type: string
+        - name: template-id
+          in: header
+          description: id of the template that will be used for rectification
+          required: false
+          schema:
+            type: boolean
+      requestBody:
+        description: image file
+        content:
+          image/png:
+            schema:
+              type: string
+              format: binary
+        required: true
+      responses:
+        '200':
+          description: success response containing a request id
+          content:
+            text/plain:
+              schema:
+                type: string
+            example:
+              request-id: a request id
+        '400':
+          description: bad request, e.g. unsupported image type, empty image file
+        '500':
+          description: an internal server error happened

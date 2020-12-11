@@ -1,0 +1,403 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.1
+  title: AI Cognitive Secretary REST API
+  description: The REST API for AI COSY.
+  contact:
+    name: COSY API Administrator
+    email: gregor.blichmann@ai4bd.com
+    url: https://ai4bd.com
+servers:
+  - url: https://red.ai4bd.org:8087/cosy
+  - url: https://staging.ai4bd.org/ais1/cosy
+paths:
+  /analysis:
+    post:
+      description: |
+        Analyses a given document and returns a JSON-LD object representing the extracted semantic information of the document. This includes information about containing addresses, key-value-pairs, or tables. In addition, the analysed document is stored for further information retrievals via SPARQL by using the document ID.
+      operationId: analyseDocument
+      parameters:
+        - name: Content-Type
+          in: header
+          description: the correct MIME type of the document, currently only application/pdf is allowed
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/FilenameParameter'
+        - $ref: '#/components/parameters/SynchronousProcessingParameter'
+        - $ref: '#/components/parameters/TargetFileFormat'
+      requestBody:
+        $ref: '#/components/requestBodies/RequestBody'
+      responses:
+        '200':
+          description: success response, containing the complete JSON-LD graph of the document within the body as JSON array
+          content:
+            'application/json':
+              example: '[{"dateCreated" : "2019-03-12","pdfFile" : "5c8824d7e03dd80064aac33b","@type" : "edm:Document","@id" : "http://ai4bd.com/resource/data/document/a80cd1e4-0f9c-40e4-baf2-620876da3472","title" : "abc.pdf","@context" : "http://models.ai4bd.org/jsonld/edm-context.jsonld",&nbsp;&nbsp; "documentPage" : [...]}...]'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/Failure'
+  /storage:
+    post:
+      description: |
+        Analyses and stores a given document and only the ID of the document. This method is used as first invocation from, e. g., business processes to provide documents and gather some information from them later on by using its ID as a reference.
+      operationId: storeDocument
+      parameters:
+        - name: Content-Type
+          in: header
+          description: the correct MIME type of the document, currently only application/pdf is allowed
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/FilenameParameter'
+        - $ref: '#/components/parameters/SynchronousProcessingParameter'
+        - $ref: '#/components/parameters/TargetFileFormat'
+      requestBody:
+        $ref: '#/components/requestBodies/PDFBody'
+      responses:
+        '200':
+          description: success response, containing the ID of the document as body
+          content:
+            'text/plain':
+              example: 'http://ai4bd.com/resource/data/document/a80cd1e4-0f9c-40e4-baf2-620472da3472'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/Failure'
+  /information/image/{documentId}:
+    get:
+      description: Retrieve some cropped image representing a information as part of a document which was previously analyzed either via the /storage or the /analysis endpoint. Therefore the ID of the document as well as the desired part of the interpreted model has to be given
+      parameters:
+        - name: 'documentId'
+          in: 'path'
+          description: 'The UUID part of the document id (@id).'
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/DesiredInterpretedModelFeature'
+        - $ref: '#/components/parameters/DesiredInterpretedModelFeatureWithTemplate'
+        - $ref: '#/components/parameters/DesiredInterpretedModelFeatureWithScalingFactor'
+      responses:
+        '200':
+          $ref: '#/components/responses/CroppedImage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/Failure'
+  /information/text:
+    get:
+      description: Retrieve some information for an analysed document via SPARQL. Therefore the ID of the document has to be given. For receiving information via a defined SPARQL query, the AI4BD do
+      operationId: informationForDocument
+      parameters:
+        - name: ais-document-id
+          in: header
+          description: an ID of a document existing within the database of COSY. With regard to the entry of the Mongo DB, the @id attribute should be used instead of the '_id'.
+          required: true
+          style: simple
+          schema:
+            type: string
+        - name: ais-sparql-query
+          in: header
+          description: a SPARQL query representing the information need
+          required: true
+          style: simple
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessInformation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/Failure'
+  /reprocessing/{documentPageId}:
+    post:
+      description: |
+        Process reannotated bounding boxes in the COSY pipeline.
+      parameters:
+        - name: 'documentPageId'
+          in: 'path'
+          description: 'The UUID part of the document page id.'
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/BBABody'
+      responses:
+        '200':
+          description: success response containing the document page id.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/Failure'
+  /reintegration/{documentPageId}:
+    post:
+      description: |
+        Re-integrate a updated set of data objects as a result of the re-annotation process.
+      parameters:
+        - name: 'documentPageId'
+          in: 'path'
+          description: 'The UUID part of the document page id.'
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/JSONLDBody'
+      responses:
+        '200':
+          description: success response containing the document page id.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/Failure'
+  /review:
+    post:
+      description: Enables to send feedback about already analyzed documents in customer specific data formats
+      operationId: postReviewedDocument
+      parameters:
+        - name: Content-Type
+          in: header
+          description: the correct MIME type of the document, currently only application/xml is allowed
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/RequiredFilenameParameter'
+      requestBody:
+        $ref: '#/components/requestBodies/XMLBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessWithoutContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/Failure'
+  /test:
+    post:
+      description: |
+        Compares referenced by the 'ais-document-id' with the XML supplied in the request body. Returns diffs linewise as text or empty. Works only with one-page documents.
+      operationId: textXml
+      parameters:
+        - name: Content-Type
+          in: header
+          description: the correct MIME type of the document, currently only application/xml is allowed
+          required: true
+          schema:
+            type: string
+        - name: ais-document-id
+          in: header
+          description: an ID of a document existing within the database of COSY. With regard to the entry of the Mongo DB, the @id attribute should be used instead of the "_id".
+          required: true
+          style: simple
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/XMLBody'
+      responses:
+        '200':
+          description: success response, containing diffs linewise of an empty string if the documents match.
+          content:
+            'text/plain':
+              example: 'Expected attribute value "7756ee1e-cc46-4da6-a881-6ad82c4ed5d0" but was "bf73bce5-ff16-4bac-918b-5f82f31ef045" - comparing <item id="7756ee1e-cc46-4da6-a881-6ad82c4ed5d0"...> at /order[1]/items[1]/item[1]/@id to <item id="bf73bce5-ff16-4bac-918b-5f82f31ef045"...> at /order[1]/items[1]/item[1]/@id (DIFFERENT)'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/Failure'
+  /ping:
+    get:
+      description: |
+        Simple health check. Does not need to provide any authentication or authorization information. Returns a "200 OK" and "pong" as payload if successful.
+      responses:
+        '200':
+          description: success response, containing "pong" as payload.
+          content:
+            'text/plain':
+              example: 'pong'
+components:
+  parameters:
+    FilenameParameter:
+      name: Cosy-Filename
+      in: header
+      description: the filename of the document provided in the body of the request, e.g., mydoc.pdf
+      required: false
+      schema:
+        type: string
+    RequiredFilenameParameter:
+      name: Cosy-Filename
+      in: header
+      description: the filename of the document provided in the body of the request, e.g., mydoc.pdf
+      required: true
+      schema:
+        type: string
+    SynchronousProcessingParameter:
+      name: Cosy-Synchronous-Processing
+      in: header
+      description: True, in case the response should wait for the final results as body (Cosy-Synchronous-Processing=true). False, in case the response represents a simple notification that is send as soon as the request body was parsed successfully.
+      required: false
+      schema:
+        type: boolean
+        default: true
+    TargetFileFormat:
+      name: Cosy-Target-Format
+      in: header
+      description: the target file format of the document to analysis output provided in the body of the response, e.g., xml
+      required: false
+      schema:
+        type: string
+        enum: [xml,excel,json,zugferd]
+        default: xml
+    DesiredInterpretedModelFeature:
+      name: Cosy-Resource
+      in: header
+      description: A URI reprensting the desired resource or resource attribute of the extracted interpreted model for a given document. For example "http://ai4bd.com/resource/cdm/customerX/alpha/contractNumber".The parameter can also contain only a partial URI, e. g., "http://ai4bd.com/resource/cdm/ai4bd/boolean". In this case, all crops which fits to this partial URI as prefix will be added to a ZIP file within the response.
+      required: true
+      schema:
+        type: string
+    DesiredInterpretedModelFeatureWithTemplate:
+      name: Crop-by-Template
+      in: header
+      description: A flag reprensting true or false for getting the crop from template or not. If wrong string provided then it responses with 400 Bad Request.
+      required: false
+      schema:
+        type: boolean
+    DesiredInterpretedModelFeatureWithScalingFactor:
+      name: Scaling-Factor
+      in: header
+      description: A factor reprensting the multification factor to scale the image. By default it is set to 1.0
+      required: false
+      schema:
+        type: number
+  responses:
+    CroppedImage:
+      description: success response including the desired cropped image
+      content:
+        image/png:
+          schema:
+            type: string
+            format: binary
+        application/zip:
+          schema:
+            type: string
+            format: binary
+
+    SuccessWithoutContent:
+      description: Success response with empty body (!) indicating that the document was transferred successfully
+    SuccessInformation:
+      description: success response as SPARQL JSON response format
+      content:
+        application/json:
+          example: '{"head":{"vars":["nameOfPerson"]},"results":{"bindings":[{"nameOfPerson":{"type": "literal","value":"Max Mustermann"}}]}}'
+          schema:
+            externalDocs:
+              description: Find more about the SPARQL JSON response format
+              url: https://www.w3.org/TR/sparql11-results-json/
+    Forbidden:
+      description: No or incorrect API access key
+    BadRequest:
+      description: The request is incorrect. This can be caused by multiple reasons. For example sending the content in an unsupported format or to a path that does not exist
+    MethodNotAllowed:
+      description: The requested method is not available for this path.
+    Failure:
+      description: a failure happens during the request processing
+  requestBodies:
+    RequestBody:
+      description: A file representing one document with one or more pages to be analysed
+      required: true
+      content:
+        image/tiff:
+          schema:
+            type: string
+            format: binary
+        image/png:
+          schema:
+            type: string
+            format: binary
+        application/pdf:
+          schema:
+            type: string
+            format: binary
+    TIFFBody:
+      description: A tiff file representing one order with one or more pages to be analysed
+      required: true
+      content:
+        image/tiff:
+          schema:
+            type: string
+            format: binary
+    XMLBody:
+      description: A XML file representing an already analyzed document with corrected values. Please use the agreed schema here.
+      required: true
+      content:
+        application/xml:
+          schema:
+            type: string
+            format: XML
+    PDFBody:
+      description: A PDF file containing the document to be analysed/stored
+      required: true
+      content:
+        application/pdf:
+          schema:
+            type: string
+            format: binary
+    BBABody:
+      description: A valid JSON array representing all bounding boxes belonging to a data page in JSON-LD
+      required: true
+      content:
+        application/json:
+          example: '[{"@id":"http://ai4bd.com/resource/data/document-page/5ec94f02-951b-4b9e-87ee-600277adb4bd","@type":"edm:DocumentPage","dateCreated":"2019-06-17T09:28:16+02:00","title":"Page 3","@context":"http://models.ai4bd.org/jsonld/edm-context.jsonld"},"documentPart":["http://ai4bd.com/resource/data/sample/5ec94f02-951b-4b9e-87ee-600277adb4bd"]]'
+          schema:
+            externalDocs:
+              description: Find more about the AI4BD JSON-LD
+              url: http://models.ai4bd.org/jsonld/edm-context.jsonld
+    JSONLDBody:
+      description: A valid JSON array representing all updated data objects resulting from an re-annotation process in JSON-LD
+      required: true
+      content:
+        application/json:
+          example: '[{"@id":"http://ai4bd.com/resource/data/document-page/5ec94f02-951b-4b9e-87ee-600277adb4bd","@type":"edm:DocumentPage","dateCreated":"2019-06-17T09:28:16+02:00","title":"Page 3","@context":"http://models.ai4bd.org/jsonld/edm-context.jsonld"},"documentPart":["http://ai4bd.com/resource/data/sample/5ec94f02-951b-4b9e-87ee-600277adb4bd"]]'
+          schema:
+            externalDocs:
+              description: Find more about the AI4BD JSON-LD
+              url: http://models.ai4bd.org/jsonld/edm-context.jsonld
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+# we want to have system-wide bearer authorization
+security:
+  - bearerAuth: []

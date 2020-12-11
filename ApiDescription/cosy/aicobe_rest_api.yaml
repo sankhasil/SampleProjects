@@ -1,0 +1,3175 @@
+openapi: 3.0.2
+info:
+  title: AICOBE REST API
+  description: All the endpoints of AICOBE available to AICOSY apps.
+  version: 1.17.0
+  contact:
+    name: COSY API Administrator
+    email: gregor.blichmann@ai4bd.com
+    url: https://ai4bd.com
+servers:
+  - url: http://localhost:3000/api
+    description: Local Development server
+  - url: https://red.ai4bd.org/api
+    description: Development server
+tags:
+  - name: users
+    description: Operations of the users permissions
+  - name: collections
+    description: Operation of collections resource
+  - name: docs
+    description: Operations related to docs resources of AICOBE
+  - name: addresses
+    description: Operation related to addresses resource of AICOBE
+  - name: doc-pages
+    description: Operations related to document page(s) in AICOBE
+  - name: resources
+    description: Operations related to resource annotation(s) in AICOBE
+  - name: entities
+    description: Operations related to entity annotation(s) in AICOBE
+  - name: tables
+    description: Operations related to table and table elements  in AICOBE
+  - name: key-value-pairs
+    description: Operations related to key, value and address fields of key-value-pairs
+  - name: key-value-pair-groups
+    description: Operations related to key-value-pair-groups  in AICOBE
+  - name: resource-bags
+    description: Operations for resource-bags in AICOBE
+  - name: ocr-annotations
+    description: Operations for Ocr Annotations
+  - name: files
+    description: Operations related to file storage in AICOBE
+  - name: paragraphs
+    description: Operations related to paragraphs in AICOBE
+  - name: next-docs
+    description: Operations related to doc id traversal in AICOBE
+  - name: validation-shapes
+    description: Operations related to SHACL and inference rules in AICOBE
+  - name: sso-proxy
+    description: Endpoints related to proxying request to SSO service
+  - name: aitea
+    description: Operations related of the Aitea term extraction
+  - name: aiclap
+    description: Operations related of the Aiclap
+  - name: aimap
+    description: Operations related to Aimap
+security:
+  - bearerAuth: []
+
+paths:
+  /users:
+    description: Operations related to user permissions
+    get:
+      summary: Get all users with their collections of permissions
+      tags:
+        - users
+      responses:
+        "200":
+          description: Returns all the users with their associated collections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Username
+                    collections:
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/Collection"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /users/create:
+    description: Create new user in the system
+    post:
+      summary: Create new user in the system
+      tags:
+        - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /users/remove:
+    description: Delete a user by using userId and collectionId
+    delete:
+      summary: Delete a user by using userId and collectionId
+      tags:
+        - users
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: collectionId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /collections:
+    get:
+      summary: Get all the collections authorized to the requesting user
+      tags:
+        - collections
+      parameters:
+        - in: query
+          name: pageNr
+          description: Page number to return subset of result
+          schema:
+            type: string
+        - in: query
+          name: user
+          description: Filter collection by user. Works with admin users auth only
+          schema:
+            type: string
+        - in: query
+          name: searchQuery
+          schema:
+            type: string
+        - in: query
+          name: colType
+          description: Filter results by the collection type
+          schema:
+            type: string
+      responses:
+        "200":
+          description: returns the paged collections and total count of the query.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  items:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Collection"
+                        - type: object
+                          properties:
+                            itemCount:
+                              type: number
+                            users:
+                              type: array
+                              items:
+                                $ref: "#/components/schemas/User"
+                            annotationClasses:
+                              type: array
+                              items:
+                                $ref: "#/components/schemas/AnnotationClass"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+    post:
+      summary: Create a collection
+      tags:
+        - collections
+      requestBody:
+        description: Only send the required properties of Collection for collection creation
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Collection"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "201":
+          $ref: "#/components/responses/SuccessResponse"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /collections/all:
+    get:
+      summary: Get all the collections of a collection type
+      tags:
+        - collections
+      parameters:
+        - in: query
+          name: colType
+          description: Filter results by the collection type
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Returns all collections based on request query.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Collection"
+                        - type: object
+                          properties:
+                            itemCount:
+                              type: number
+                            users:
+                              type: array
+                              items:
+                                $ref: "#/components/schemas/User"
+                            annotationClasses:
+                              type: array
+                              items:
+                                $ref: "#/components/schemas/AnnotationClass"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /collections/update:
+    post:
+      summary: Remove ids of the documents which are removed already
+      tags:
+        - collections
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        "200":
+          description: Document ids removed successfully. Returns the number of document ids removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  count:
+                    type: number
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /collections/{uuid}:
+    get:
+      summary: Get all the collections authorized to requesting user
+      tags:
+        - collections
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+        - in: query
+          name: page
+          description: Page number to return subset of result
+          schema:
+            type: string
+        - in: query
+          name: search
+          description: Search string in collection
+          schema:
+            type: string
+      responses:
+        "200":
+          description: returns the paged collections and total count of the query.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  colId:
+                    type: string
+                  itemCount:
+                    type: number
+                  itemType:
+                    type: string
+                  title:
+                    type: string
+                  items:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Collection"
+                        - type: object
+                          properties:
+                            attachmentsCount:
+                              type: number
+                            attachments:
+                              type: array
+                              items:
+                                type: string
+
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+    post:
+      summary: Updates a collection by given id in the path and transmitting the whole edited collection
+      tags:
+        - collections
+      requestBody:
+        description: send the required properties of Collection for collection creation
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Collection"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "201":
+          $ref: "#/components/responses/SuccessResponse"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+    delete:
+      summary: Delete a collection by given id in path
+      tags:
+        - collections
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /collections/{uuid}/meta:
+    get:
+      summary: Get meta info of collection
+      tags:
+        - collections
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: Returns meta info of collection with the given id.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  annotationClasses:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AnnotationClass"
+
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+
+  /docs:
+    get:
+      summary: get all the documents and their count
+      tags:
+        - docs
+      parameters:
+        - in: query
+          name: page
+          description: Page number to return subset of result
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: colType
+          description: Filter results by the collection type
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Respond with documents and the count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  docs:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+    delete:
+      summary: delete multiple documents by their ids.
+      tags:
+        - docs
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: returns the count of deleted documents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+
+  /docs/{uuid}:
+    get:
+      summary: Get details of the document by id.
+      tags:
+        - docs
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: returns the document object for the id.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+
+  /docs/{uuid}/pages:
+    get:
+      summary: Get pages of the given document id.
+      tags:
+        - docs
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: returns the document object for the id.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DocumentPage"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /docs/{uuid}/interpreted-model:
+    get:
+      summary: Get interpreted models of the given document id.
+      tags:
+        - docs
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: returns the document object for the id.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object # update to use the schema of Interpreted content
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /addresses/{uuid}:
+    post:
+      summary: Update data of postal address
+      tags:
+        - addresses
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                confidence:
+                  type: number
+                city:
+                  type: string
+                streetName:
+                  type: string
+                streetNumber:
+                  type: string
+                postalCode:
+                  type: string
+                postOfficeBoxNumber:
+                  type: string
+                textField:
+                  type: string
+                title:
+                  type: string
+      responses:
+        "200":
+          description: Update was successful or new address is created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostalAddress"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+    get:
+      summary: (Redirects) Get postal addresses of the given document page ids.
+      tags:
+        - addresses
+      parameters:
+        - name: uuid
+          description: uuid of the DOCUMENT PAGE under which addresses are nested.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirects to /doc-pages/{uuid}/addresses/
+          headers:
+            Location:
+              description: url for redirection
+              schema:
+                type: "string"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /doc-pages/{uuid}:
+    get:
+      summary: Get all details of the document page as array
+      tags:
+        - doc-pages
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: returns the array of document properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  anyOf:
+                    - $ref: "#/components/schemas/DocumentPage"
+                    - $ref: "#/components/schemas/Address"
+                    - $ref: "#/components/schemas/Paragraph"
+                    - $ref: "#/components/schemas/KeyValuePair"
+                    - $ref: "#/components/schemas/KeyValuePairGroup"
+                    - $ref: "#/components/schemas/Table"
+                  discriminator:
+                    propertyName: "@type"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /doc-pages/{uuid}/addresses:
+    get:
+      summary: Get postal addresses of the given document page ids.
+      tags:
+        - doc-pages
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: returns the addresses found for the given document page
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PostalAddress"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /doc-pages/{uuid}/paragraphs:
+    get:
+      summary: Get paragraphs of the document page
+      tags:
+        - doc-pages
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: Return array of paragraphs found for the document page
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Paragraph"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /doc-pages/{uuid}/reextraction:
+    post:
+      summary: Performs re-extraction of the given bounding boxes using re-annotation service.
+      tags:
+        - doc-pages
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  "@id":
+                    type: string
+                  "@type":
+                    type: array
+                    items:
+                      type: string
+                  "@context":
+                    type: string
+                  annotationOrigin:
+                    type: string
+                  confidence:
+                    type: number
+                  dateCreated:
+                    type: string
+                  height:
+                    type: number
+                  width:
+                    type: number
+                  originX:
+                    type: number
+                  originY:
+                    type: number
+                  relatedCreativeWork:
+                    type: array
+                    items:
+                      type: string
+                  imageFile:
+                    type: string
+                  visualObjectClass:
+                    type: string
+      responses:
+        "200":
+          description: On successful extraction from re-annotation service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /doc-pages/{uuid}/reintegration:
+    post:
+      summary: Performs re-integration of the given bounding boxes using re-annotation service.
+      tags:
+        - doc-pages
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: On successful extraction from re-annotation service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+
+  /resources:
+    delete:
+      summary: Performs deletion of the given resource annotation id(s)
+      tags:
+        - resources
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/DeletionSuccessResponse"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+
+  /entities:
+    post:
+      summary: Handles request to create or update entity annotation.
+      tags:
+        - entities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntityAnnotation"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "201":
+          $ref: "#/components/responses/CreationSuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+    delete:
+      summary: Delete entity annotations by given ids.
+      tags:
+        - entities
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/DeletionSuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+
+  /entities/approve:
+    post:
+      summary: mark multiple entity annotation as approved
+      tags:
+        - entities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                entities:
+                  $ref: "#/components/schemas/EntityAnnotation"
+      responses:
+        "200":
+          description: On successful update of all the entity annotation in request
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EntityAnnotation"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /tables/{uuid}:
+    get:
+      summary: Retrieves a table for the given id from database if present.
+      tags:
+        - tables
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: Responds with the data of the table
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  headerRow:
+                    $ref: "#/components/schemas/HeaderRow"
+                  rows:
+                    $ref: "#/components/schemas/DataAndFooterRows"
+                  columnIds:
+                    type: array
+                    items:
+                      type: string
+                  rowIds:
+                    type: array
+                    items:
+                      type: string
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+    post:
+      summary: Updates text value of a table element (table cell, table footer, table header)
+      tags:
+        - tables
+      parameters:
+        - in: path
+          name: uuid
+          description: uuid of a table element
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - "@id"
+                - text
+              properties:
+                "@id":
+                  type: string
+                text:
+                  type: string
+      responses:
+        "201":
+          description: successfully updated the element
+          content:
+            application/json:
+              schema:
+                # TODO: Update the schema once we have defined which elements can be updated
+                type: object
+                anyOf:
+                  - $ref: "#/components/schemas/TableCell"
+                  - $ref: "#/components/schemas/TableColumn"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /key-values/{uuid}/item:
+    get:
+      summary: Retrives a key-value-pair or key-address-pair based on type given.
+      tags:
+        - key-value-pairs
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+        - in: query
+          name: type
+          required: false
+          description: Type which api should use for the id of pair.
+          schema:
+            type: string
+            enum:
+              - edm:KeyAddressPair
+              - edm:KeyValuePair
+      responses:
+        "200":
+          description: Returns a key-value-pair or key-address-pair
+          content:
+            application/json:
+              schema:
+                type: object
+                anyOf:
+                  - $ref: "#/components/schemas/KeyValuePair"
+                  - $ref: "#/components/schemas/KeyAddressPair"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /key-values/{fieldId}:
+    post:
+      summary: Updates a key-field, value-field or address data.
+      tags:
+        - key-value-pairs
+      parameters:
+        - in: path
+          name: fieldId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              anyOf:
+                - $ref: "#/components/schemas/Address"
+                - $ref: "#/components/schemas/KeyField"
+                - $ref: "#/components/schemas/ValueField"
+      responses:
+        "200":
+          description: Returns updated result
+          content:
+            application/json:
+              schema:
+                type: object
+                anyOf:
+                  - $ref: "#/components/schemas/Address"
+                  - $ref: "#/components/schemas/KeyField"
+                  - $ref: "#/components/schemas/ValueField"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /kvp-groups/{docPageId}:
+    get:
+      summary: Get key-value-pair-groups of the given document page id.
+      tags:
+        - key-value-pair-groups
+      parameters:
+        - in: path
+          name: docPageId
+          description: Document page id for which key-value-pair-groups will be extracted
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Responds with key-value-pair-groups attached to document page
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/KeyValuePairGroup"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /resource-bags/{uuid}:
+    get:
+      summary: Get resource bag by id
+      tags:
+        - resource-bags
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: On success returns instance of ResourceBag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceBag"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+
+  /ocrs:
+    delete:
+      summary: Delete ocr annotations by their ids
+      tags:
+        - ocr-annotations
+      parameters:
+        - $ref: "#/components/parameters/IdsInQuery"
+      responses:
+        "200":
+          description: On successful deletion returns the count of the deletions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "success"
+                  count:
+                    type: number
+                  # TODO: remove this property if not used by frontend
+                  result:
+                    type: object
+                    properties:
+                      n:
+                        type: number
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /files:
+    delete:
+      summary: Delete files from mongodb gridfs with the given ids and type of files
+      tags:
+        - files
+      parameters:
+        - in: query
+          name: type
+          description: type of file for the ids to delete
+          required: true
+          schema:
+            type: string
+            enum:
+              - image
+              - pdf
+        - in: query
+          name: id
+          required: true
+          description: ids of the files to delete
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /files/image:
+    post:
+      summary: Delete image files from mongodb gridfs with the given ids
+      tags:
+        - files
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /files/pdf:
+    post:
+      summary: Delete pdf files from mongodb gridfs with the given ids
+      tags:
+        - files
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /paragraphs/{uuid}:
+    post:
+      summary: Update paragraph text by id.
+      tags:
+        - paragraphs
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: Updated paragraph object on success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Paragraph"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+    get:
+      summary: Get paragraphs of document page. (Redirects)
+      tags:
+        - paragraphs
+      parameters:
+        - in: path
+          name: uuid
+          description: uuid of DOCUMENT page.
+          required: true
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirects to /doc-pages/{uuid}/paragraphs/
+          headers:
+            Location:
+              description: url for redirection
+              schema:
+                type: "string"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /next-docs:
+    get:
+      summary: Get next or prev document id with respect to given id.
+      tags:
+        - next-docs
+      parameters:
+        - in: query
+          name: id
+          description: current document id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: colName
+          description: collection id to look in
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: direction
+          required: true
+          schema:
+            type: string
+            enum:
+              - next
+              - prev
+      responses:
+        "200":
+          description: Returns the next requested document id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  docId:
+                    type: string
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /validation-shapes:
+    post:
+      summary: Create new rule in database
+      tags:
+        - validation-shapes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/ShaclRule"
+                - $ref: "#/components/schemas/InferenceRule"
+      responses:
+        "201":
+          description: Returns newly created rule formatted for UI
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ShaclRule"
+                  - $ref: "#/components/schemas/InferenceRule"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+    delete:
+      summary: delete a rule with the given id
+      tags:
+        - validation-shapes
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /validation-shapes/update:
+    post:
+      summary: Update or create a SHACL rule
+      tags:
+        - validation-shapes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/ShaclRule"
+                - $ref: "#/components/schemas/InferenceRule"
+      responses:
+        "200":
+          description: Returns updated rule formatted for UI
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ShaclRule"
+                  - $ref: "#/components/schemas/InferenceRule"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /validation-shapes/import/shacl:
+    post:
+      summary: Find data of shacl rules and related bounding boxes from the given document page id
+      tags:
+        - validation-shapes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - destDocId
+                - ruleIds
+              properties:
+                destDocId:
+                  type: string
+                ruleIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Return extracted rules, bounding boxes and image meta data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rules:
+                    type: array
+                    items:
+                      oneOf:
+                        - $ref: "#/components/schemas/InferenceRule"
+                        - $ref: "#/components/schemas/ShaclRule"
+                  annotations:
+                    type: array
+                    items:
+                      allOf:
+                        - properties:
+                            "_id":
+                              type: string
+                        - $ref: "#/components/schemas/BoundingBoxAnnotation"
+                  imageMetadata:
+                    type: object # TODO: add details of metadata if available.
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /validation-shapes/{id}:
+    get:
+      summary: Get validation shapes for the given DOCUMENT PAGE id and search string
+      tags:
+        - validation-shapes
+      parameters:
+        - in: path
+          name: id
+          description: DOCUMENT PAGE id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: search
+          description: text to search in the shapes data
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Returns shapes in document page
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: "#/components/schemas/ShaclRule"
+                    - $ref: "#/components/schemas/InferenceRule"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+    delete:
+      summary: Delete a rule with the given id
+      tags:
+        - validation-shapes
+      parameters:
+        - in: path
+          name: id
+          description: UUID of the rule to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /sso/login:
+    post:
+      summary: proxy login request (Public Url)
+      security: []
+      tags:
+        - sso-proxy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Returns JWT token on successful login
+          content:
+            text/plain:
+              schema:
+                description: JWT token value
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+
+  /sso/verify:
+    get:
+      summary: proxy verify token request
+      tags:
+        - sso-proxy
+      responses:
+        "200":
+          description: Return user object on successful token verification
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uid:
+                    type: string
+                  name:
+                    type: string
+                  groups:
+                    type: array
+                    items:
+                      type: string
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+
+  /sso/groups:
+    get:
+      summary: proxy get all groups request
+      tags:
+        - sso-proxy
+      responses:
+        "200":
+          description: Return groups list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+
+  /sso/groups/{id}:
+    get:
+      summary: proxy get members of group request
+      tags:
+        - sso-proxy
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: group id
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Return members list of the given group id.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+
+  /sso/members:
+    get:
+      summary: proxy get all members request
+      tags:
+        - sso-proxy
+      responses:
+        "200":
+          description: Return all members list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+
+  /aitea/file-upload:
+    post:
+      summary: Upload given file
+      tags:
+        - aitea
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              format: binary
+      responses:
+        "201":
+          description: Return uploaded file
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaTypeResponse"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+    delete:
+      summary: Delete given fileUrl
+      tags:
+        - aitea
+      parameters:
+        - in: query
+          name: fileUrl
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Return deleted fileUrl
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fileUrl:
+                    type: string
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /aitea/term-extraction:
+    get:
+      summary: Get all the term extractions
+      tags:
+        - aitea
+      responses:
+        "200":
+          description: Returns all the term extractions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  anyOf:
+                    - $ref: "#/components/schemas/TermExtraction"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /aitea/term-extraction/create-term-extraction-info:
+    post:
+      summary: Create the term extraction file information to mongoDB
+      tags:
+        - aitea
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fileName:
+                  type: string
+                fileUrl:
+                  type: string
+                dateTime:
+                  type: string
+      responses:
+        "201":
+          description: Created term extraction info entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TermExtraction"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /aitea/term-extraction/remove-term-extraction-info:
+    delete:
+      summary: Delete the term extraction file info
+      tags:
+        - aitea
+      parameters:
+        - in: query
+          name: fileUrl
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+  /aitea/term-extraction/start-term-extraction:
+    post:
+      summary: Start the term extractions process with the given parameters at the aitea-backend
+      tags:
+        - aitea
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                inputFile:
+                  type: string
+                inputType:
+                  type: string
+                language:
+                  type: string
+                tfidfNgramMin:
+                  type: number
+                tfidfNgramMax:
+                  type: number
+                contextWordMax:
+                  type: number
+                contextWindowSize:
+                  type: number
+                outputType:
+                  type: string
+      responses:
+        "201":
+          description: On successful term extraction from aitea-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /aitea/term-extraction/get-term-extraction-json-result/{uuid}:
+    get:
+      summary: Get the term extraction result with JSON format
+      tags:
+        - aitea
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: On successful term extraction result with JSON format from aitea-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /aitea/term-extraction/create-term-extraction:
+    post:
+      summary: Create the term extractions to mongoDB
+      tags:
+        - aitea
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                taskId:
+                  type: string
+                fileUrl:
+                  type: string
+                language:
+                  type: string
+                outputType:
+                  type: string
+                inputType:
+                  type: string
+                tfidfNgramMin:
+                  type: number
+                tfidfNgramMax:
+                  type: number
+                contextWordMax:
+                  type: number
+                contextWindowSize:
+                  type: number
+                status:
+                  type: string
+                termResultUrl:
+                  type: string
+      responses:
+        "201":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+  /aitea/term-extraction/remove-term-extraction:
+    delete:
+      summary: Delete the term extraction from mongoDB
+      tags:
+        - aitea
+      parameters:
+        - in: query
+          name: fileUrl
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: taskId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /aitea/term-extraction/get-term-extraction-status:
+    get:
+      summary: Get the status info of term extraction
+      tags:
+        - aitea
+      parameters:
+        - in: query
+          name: taskId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: On successful the status info of the term extraction from aitea-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /aitea/term-extraction/get-term-extraction-configuration-schema:
+    get:
+      summary: Get the schema of term extraction parameters
+      tags:
+        - aitea
+      responses:
+        "200":
+          description: On successful the json schema of therm extraction parameters from aitea-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /aitea/term-extraction/update-term-extraction-status:
+    post:
+      summary: Update the term extraction status
+      tags:
+        - aitea
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                taskId:
+                  type: string
+                status:
+                  type: string
+      responses:
+        "201":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+  /aitea/term-extraction/stop-running-term-extraction-process/{uuid}:
+    get:
+      summary: Stops the running term extraction process
+      tags:
+        - aitea
+      parameters:
+        - $ref: "#/components/parameters/UUIDInPath"
+      responses:
+        "200":
+          description: On successful term extraction stop process from aitea-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /aiclap/categorization/algorithms:
+    get:
+      summary: Gets the categorization algorithms
+      tags:
+        - aiclap
+      responses:
+        "200":
+          description: Return the all categorization algorithms from aiclap-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+  /aiclap/categorization/config-schemas/{algorithmLabel}:
+    get:
+      summary: Gets the categorization schema by given algorithm label
+      tags:
+        - aiclap
+      parameters:
+        - in: path
+          name: algorithmLabel
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Return the categorization schema by given label from aiclap-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+  /aiclap/categorization:
+    post:
+      summary: Starts the categorization with the given parameters and data at the aiclap-backend
+      tags:
+        - aiclap
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object # TODO: update with the details of the response type
+              properties:
+                config:
+                  type: object
+                documents:
+                  type: object
+      responses:
+        "200":
+          description: On successful the categorization process from aiclap-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+  /aiclap/clustering/algorithms:
+    get:
+      summary: Gets the clustering algorithms
+      tags:
+        - aiclap
+      responses:
+        "200":
+          description: Return the all clustering algorithms from aiclap-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+  /aiclap/clustering/config-schemas/{algorithmLabel}:
+    get:
+      summary: Gets the clustering schema by given algorithm label
+      tags:
+        - aiclap
+      parameters:
+        - in: path
+          name: algorithmLabel
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Return the clustering schema by given label from aiclap-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+  /aiclap/clustering/hyper-parameters/config-schema:
+    get:
+      summary: Gets the clustering schema with hyperparameter
+      tags:
+        - aiclap
+      responses:
+        "200":
+          description: Return the clustering schema by given label from aiclap-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+  /aiclap/clustering:
+    post:
+      summary: Starts the clustering with the given parameters and data at the aiclap-backend
+      tags:
+        - aiclap
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object # TODO: update with the details of the response type
+              properties:
+                config:
+                  type: object
+                documents:
+                  type: object
+      responses:
+        "200":
+          description: On successful the clustering process from aiclap-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+  /aiclap/clustering/hyper-parameters:
+    post:
+      summary: Starts the clustering with the given hyperparameter parameters and data at the aiclap-backend
+      tags:
+        - aiclap
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object # TODO: update with the details of the response type
+              properties:
+                config:
+                  type: object
+                documents:
+                  type: object
+      responses:
+        "200":
+          description: On successful the clustering process from aiclap-backend service
+          content:
+            application/json:
+              schema:
+                type: object # TODO: update with the details of the response type
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+  /aimap/rml:
+    get:
+      summary: Get an Rml object by id
+      tags:
+        - aimap
+      parameters:
+        - in: query
+          name: id
+          required: true
+          description: Rml object id
+          schema:
+            type: string  
+      responses:
+        "200":
+          description: Found rml object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rml' 
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    post:
+      summary: Create an Rml object
+      tags:
+        - aimap
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+      responses:
+        "201":
+          description: Created rml object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rml'
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    delete:
+      summary: Delete an Rml object by id
+      tags:
+        - aimap
+      parameters:
+        - in: query
+          name: id
+          required: true
+          description: Rml object id
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: '#/components/responses/DeletionSuccessResponse'
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"    
+  /aimap/rml/update:
+     post:
+      summary: Update an Rml object by id
+      tags:
+        - aimap
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                content:
+                  type: string
+      responses:
+        "200":
+          description: Updated rml object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rml'
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnAuthorizedErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+        
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    SuccessResponse:
+      description: Responds with success message if operation is successful
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    CreationSuccessResponse:
+      description: Operation successfully creates a new item
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    UnAuthorizedErrorResponse:
+      description: Access token is missing or invalid
+      # TODO: update the response content after Nestjs passport auth is used in aicobe
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: UnAuthorized
+    BadRequestError:
+      description: Incoming request body/params are invalid or missing
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: string
+                description: http error code
+              error:
+                type: string
+                description: general error description
+              message:
+                type: array
+                description: array of errors describing error of the properties in each line
+                items:
+                  type: string
+    NotFoundErrorResponse:
+      description: Requested resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: string
+                description: http error code
+              error:
+                type: string
+                description: general error description
+              message:
+                type: array
+                description: array of errors describing error of the properties in each line
+                items:
+                  type: string
+    DeletionSuccessResponse:
+      description: On successful deletion returns the count of the deletions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              result:
+                type: object
+                properties:
+                  n:
+                    type: number
+                  ok:
+                    type: number
+                  deletedCount:
+                    type: number
+    UnsupportedMediaTypeResponse:
+      description: Exception thrown to indicate that a Content-Type is not supported.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: string
+                description: http error code
+              error:
+                type: string
+                description: general error description
+              message:
+                type: array
+                description: array of errors describing error of the properties in each line
+                items:
+                  type: string
+    InternalServerErrorResponse:
+      description: The server encountered an unexpected condition that prevented it from fulfilling the request.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: string
+                description: http error code
+              error:
+                type: string
+                description: general error description
+              message:
+                type: array
+                description: array of errors describing error of the properties in each line
+                items:
+                  type: string
+  parameters:
+    UUIDInPath:
+      name: uuid
+      description: UUID of a single item of the resource.
+      in: path
+      required: true
+      schema:
+        type: string
+    IdsInQuery:
+      name: id
+      description: Can be a single id or multiple ids.
+      in: query
+      required: true
+      schema:
+        type: array
+        items:
+          type: string
+  schemas:
+    User:
+      type: object
+      required:
+        - "@id"
+        - "@type"
+        - "@context"
+        - "relatedAgent"
+        - "relatedCreativeWork"
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+        "@context":
+          type: string
+        relatedAgent:
+          type: string
+        relatedCreativeWork:
+          type: string
+    Collection:
+      type: object
+      required:
+        - "@id"
+        - "@type"
+        - "@context"
+        - title
+        - item
+        - itemType
+        - annotationToUse
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+        "@context":
+          type: string
+        title:
+          type: string
+        item:
+          type: array
+          items:
+            type: string
+        itemType:
+          type: string
+        annotationToUse:
+          type: array
+          items:
+            type: string
+        approved:
+          type: array
+          items:
+            type: string
+        refused:
+          type: array
+          items:
+            type: string
+        annotated:
+          type: array
+          items:
+            type: string
+        approvedCount:
+          type: number
+        annotatedCount:
+          type: number
+        refusedCount:
+          type: number
+        colId:
+          type: string
+        existingCollectionUuid:
+          type: string
+    Base:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+        "@context":
+          type: string
+        title:
+          type: string
+        text:
+          type: string
+        dateCreated:
+          type: string
+    Document:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            imageFile:
+              type: string
+            relatedCreativeWork:
+              type: string
+            relatedTemplate:
+              type: string
+            documentPart:
+              type: array
+              items:
+                type: string
+            documentPage:
+              type: array
+              items:
+                type: string
+            interpretedContent:
+              type: array
+              items:
+                type: object # TODO: update schema after more information
+            attachments:
+              type: array
+              items:
+                $ref: "#/components/schemas/Document"
+            entityAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/EntityAnnotation"
+            resourceAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/ResourceAnnotation"
+            documentPages:
+              type: array
+              items:
+                $ref: "#/components/schemas/DocumentPage"
+            languageAnnotation:
+              $ref: "#/components/schemas/LanguageAnnotation"
+            classificationAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/ClassificationAnnotation"
+            documentPageCount:
+              type: number
+            attachmentsCount:
+              type: number
+            entityCount:
+              type: number
+            classificationCount:
+              type: number
+            aisId:
+              type: string
+            isApproved:
+              type: boolean
+    DocumentPage:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            imageFile:
+              type: string
+            relatedCreativeWork:
+              type: string
+            relatedTemplate:
+              type: string
+            documentPart:
+              type: array
+              items:
+                type: string
+            entityAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/EntityAnnotation"
+            languageAnnotation:
+              $ref: "#/components/schemas/LanguageAnnotation"
+            documentPartItems:
+              type: array
+              items:
+                $ref: "#/components/schemas/Address"
+            paragraphs:
+              type: array
+              items:
+                $ref: "#/components/schemas/Paragraph"
+            classificationAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/ClassificationAnnotation"
+    Address:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            text:
+              type: string
+            contains:
+              type: array
+              items:
+                type: string
+            postalAddress:
+              type: object
+            resourceAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/ResourceAnnotation"
+      example:
+        {
+          "@id": "http://ai4bd.com/resource/data/address-field/c3705242-e730-4555-8497-95141c2fec89",
+          "@context": "http://models.ai4bd.org/jsonld/edm-context.jsonld",
+          "@type": "edm:AddressField",
+          "dateCreated": "2019-03-12T22:30:06+01:00",
+          "title": "Address field",
+          "text": "P.P. 9001 St.Gallen, St.Galler Stadtwerke Post CH AG",
+          "contains":
+            [
+              "http://ai4bd.com/resource/data/postal-address/af0fa5a7-fbd5-4922-8c5c-4aa993518dd7",
+            ],
+        }
+
+    PostalAddress:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            confidence:
+              type: number
+            city:
+              type: array
+              items:
+                type: string
+            streetName:
+              type: array
+              items:
+                type: string
+            streetNumber:
+              type: array
+              items:
+                type: string
+            postalCode:
+              type: array
+              items:
+                type: string
+            postOfficeBoxNumber:
+              type: array
+              items:
+                type: string
+            textField:
+              type: array
+              items:
+                type: string
+            title: # override the title from Base schema since we need array here
+              type: array
+              items:
+                type: string
+
+    AnnotationClass:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+        "@context":
+          type: string
+        title:
+          type: string
+        classToAnnotate:
+          type: string
+        text:
+          type: string
+        textField:
+          type: string
+        color:
+          type: string
+        selected:
+          type: boolean
+        classId:
+          type: string
+        aisId:
+          type: string
+        id:
+          type: string
+
+    ClassificationAnnotation:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+        "@context":
+          type: string
+        confidence:
+          type: string
+        annotationOrigin:
+          type: string
+        relatedCreativeWork:
+          type: string
+        dateCreated:
+          type: string
+        text:
+          type: string
+        author:
+          type: string
+
+    EntityAnnotation:
+      type: object
+      required:
+        - "@id"
+        - "@type"
+        - "@context"
+        - annotationEnd
+        - annotationStart
+        - entityConfidence
+        - relatedCreativeWork
+        - text
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: array
+          items:
+            type: string
+        "@context":
+          type: string
+        annotationEnd:
+          type: number
+        annotationStart:
+          type: number
+        entityConfidence:
+          type: number
+        relatedCreativeWork:
+          type: string
+        annotationOrigin:
+          type: string
+        text:
+          type: string
+        isApproved:
+          type: boolean
+        type:
+          type: string
+
+    ResourceAnnotation:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+        annotationEnd:
+          type: number
+        annotationStart:
+          type: number
+        confidence:
+          type: number
+        disambiguationConfidence:
+          type: number
+        entityConfidence:
+          type: number
+        relatedCreativeWork:
+          type: string
+        annotationOrigin:
+          type: string
+        text:
+          type: string
+        useService:
+          type: string
+        type:
+          type: string
+
+    LanguageAnnotation:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: array
+          items:
+            type: string
+        "@context":
+          type: string
+        annotationOrigin:
+          type: string
+        confidence:
+          type: number
+        language:
+          type: string
+        relatedCreativeWork:
+          type: string
+
+    OcrAnnotation:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: array
+          items:
+            type: string
+        "@context":
+          type: string
+        annotationStart:
+          type: number
+        annotationEnd:
+          type: number
+        annotationOrigin:
+          type: string
+        text:
+          type: string
+        confidence:
+          type: number
+        relatedCreativeWork:
+          type: string
+        author:
+          type: string
+        fixedConfidence:
+          type: number
+
+    BoundingBoxAnnotation:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+        "@context":
+          type: string
+        annotationOrigin:
+          type: string
+        confidence:
+          type: number
+        dateCreated:
+          type: string
+        height:
+          type: number
+        width:
+          type: number
+        originX:
+          type: number
+        originY:
+          type: number
+        relatedCreativeWork:
+          type: array
+          items:
+            type: string
+        relatedValidationShape:
+          type: array
+          items:
+            type: string
+        textField:
+          type: string
+        visualObjectClass:
+          type: string
+        imageFile:
+          type: string
+        annotationClass:
+          $ref: "#/components/schemas/AnnotationClass"
+
+    Paragraph:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            text:
+              type: string
+            uuid:
+              type: string
+            id:
+              type: string
+            ocrAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OcrAnnotation"
+            resourceAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/ResourceAnnotation"
+
+    KeyField:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            text:
+              type: string
+            uuid:
+              type: string
+            ocrAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OcrAnnotation"
+            resourceAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/ResourceAnnotation"
+      example:
+        {
+          "@id": "http://ai4bd.com/resource/data/key-field/24f933ac-8d26-462d-9503-8d01e012961d",
+          "@context": "http://models.ai4bd.org/jsonld/edm-context.jsonld",
+          "@type": "edm:KeyField",
+          "dateCreated": "2019-06-18T14:22:43+02:00",
+          "title": "Key field",
+          "text": "Nummer",
+        }
+
+    ValueField:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            text:
+              type: string
+            uuid:
+              type: string
+            ocrAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OcrAnnotation"
+            resourceAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/ResourceAnnotation"
+      example:
+        {
+          "@id": "http://ai4bd.com/resource/data/value-field/3c8cdbe6-6e46-47d6-b1d2-c3b75edbbb29",
+          "@context": "http://models.ai4bd.org/jsonld/edm-context.jsonld",
+          "@type": "edm:ValueField",
+          "dateCreated": "2019-06-18T14:22:43+02:00",
+          "title": "Value field",
+          "text": "4500116613",
+        }
+
+    KeyValuePair:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            text:
+              type: string
+            uuid:
+              type: string
+            id:
+              type: string
+            keyObject:
+              type: string
+            valueObject:
+              type: string
+            key:
+              $ref: "#/components/schemas/KeyField"
+            value:
+              $ref: "#/components/schemas/ValueField"
+      example:
+        {
+          "@id": "http://ai4bd.com/resource/data/key-value-pair/ec2fd6f6-2284-47cc-a3a8-e8aecff37866",
+          "@context": "http://models.ai4bd.org/jsonld/edm-context.jsonld",
+          "@type": "edm:KeyValuePair",
+          "dateCreated": "2019-06-18T14:22:43+02:00",
+          "title": "Key Value Pair",
+          "keyObject": "http://ai4bd.com/resource/data/key-field/24f933ac-8d26-462d-9503-8d01e012961d",
+          "valueObject": "http://ai4bd.com/resource/data/value-field/3c8cdbe6-6e46-47d6-b1d2-c3b75edbbb29",
+          "text": "Nummer 4500116613",
+        }
+    KeyAddressPair:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            text:
+              type: string
+            uuid:
+              type: string
+            id:
+              type: string
+            keyObject:
+              type: string
+            valueObject:
+              type: string
+            key:
+              $ref: "#/components/schemas/KeyField"
+            value:
+              $ref: "#/components/schemas/Address"
+      example:
+        {
+          "@id": "http://ai4bd.com/resource/data/key-address-pair/2d0f106b-4a46-4971-a259-db783dd2ccd7",
+          "@context": "http://models.ai4bd.org/jsonld/edm-context.jsonld",
+          "@type": "edm:KeyAddressPair",
+          "dateCreated": "2019-06-18T14:22:43+02:00",
+          "title": "Key Address Pair",
+          "keyObject": "http://ai4bd.com/resource/data/key-field/24f933ac-8d26-462d-9503-8d01e012961d",
+          "valueObject": "http://ai4bd.com/resource/data/address-field/c3705242-e730-4555-8497-95141c2fec89",
+          "text": "Nummer 741258963",
+        }
+
+    KeyValuePairGroup:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            text:
+              type: string
+            uuid:
+              type: string
+            contain:
+              type: array
+              items:
+                type: string
+            keyValuePairs:
+              type: array
+              items:
+                $ref: "#/components/schemas/KeyValuePair"
+            keyAddressPairs:
+              type: array
+              items:
+                $ref: "#/components/schemas/KeyAddressPair"
+      example:
+        {
+          "@id": "http://ai4bd.com/resource/data/key-value-pair-group/4bb94068-df77-4039-8753-2ba78909dd42",
+          "@context": "http://models.ai4bd.org/jsonld/edm-context.jsonld",
+          "@type": "edm:KeyValuePairGroup",
+          "title": "Key Value Pair Group",
+          "dateCreated": "2019-06-18T14:22:43+02:00",
+          "contains":
+            [
+              "http://ai4bd.com/resource/data/key-value-pair/ec2fd6f6-2284-47cc-a3a8-e8aecff37866",
+            ],
+        }
+    ResourceBag:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            contains:
+              type: array
+              items:
+                type: string
+            containedObjects:
+              type: array
+              items:
+                $ref: "#/components/schemas/Base"
+      example:
+        {
+          "@id": "http://ai4bd.com/resource/data/gdm-resource-bag/e22231df-eb39-4d59-9f6b-49a90a962277",
+          "@type": "gdm:GdmResourceBag",
+          "@context": "http://models.ai4bd.org/jsonld/edm-context.jsonld",
+          "dateCreated": "2019-07-16T02:30:39+02:00",
+          "contains":
+            [
+              "http://ai4bd.com/resource/data/gdm-resource/6a66ea01-ea5c-4b1d-a3fd-10fbceb6e547",
+              "http://ai4bd.com/resource/data/gdm-resource/2fa66f4d-44b9-4f04-9ee3-9c656e4ce09b",
+            ],
+          "containedObjects":
+            [
+              {
+                "@context": "http://models.ai4bd.org/jsonld/edm-context.jsonld",
+                "@id": "http://ai4bd.com/resource/data/gdm-resource/2c237aa4-f409-4d07-b655-a1bda5",
+                "@type": "gdm:GdmResource",
+                "confidence": "0.9610821",
+              },
+            ],
+        }
+    TableCell:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: array
+          items:
+            type: string
+        "@context":
+          type: string
+        dateCreated:
+          type: string
+        title:
+          type: string
+        row:
+          type: string
+        column:
+          type: string
+        text:
+          type: string
+        imageFile:
+          type: string
+        ocrAnnotations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OcrAnnotation"
+        resourceAnnotations:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResourceAnnotation"
+        boundingBox:
+          $ref: "#/components/schemas/BoundingBoxAnnotation"
+
+    TableRow:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: array
+          items:
+            type: string
+        "@context":
+          type: string
+        dateCreated:
+          type: string
+        title:
+          type: string
+        columnNumber:
+          type: number
+        rowNumber:
+          type: number
+        contains:
+          type: array
+          items:
+            type: object
+        paragraphs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Paragraph"
+        addresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Address"
+        keyValuePairs:
+          type: array
+          items:
+            $ref: "#/components/schemas/KeyValuePair"
+        cells:
+          type: array
+          items:
+            $ref: "#/components/schemas/TableCell"
+
+    TableColumn:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            uuid:
+              type: string
+            columnNumber:
+              type: number
+            rowNumber:
+              type: number
+
+    Table:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            row:
+              type: string
+            column:
+              type: string
+            rows:
+              type: array
+              items:
+                $ref: "#/components/schemas/TableRow"
+            cols:
+              type: array
+              items:
+                $ref: "#/components/schemas/TableColumn"
+
+    TableRowMetadata:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - properties:
+            ocrAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OcrAnnotation"
+            resourceAnnotations:
+              type: array
+              items:
+                $ref: "#/components/schemas/ResourceAnnotation"
+            boundingBox:
+              $ref: "#/components/schemas/BoundingBoxAnnotation"
+
+    HeaderRow:
+      type: array
+      items:
+        type: object
+        required:
+          - id
+          - text
+        properties:
+          id:
+            type: string
+          uuid:
+            type: string
+          text:
+            type: string
+          confidence:
+            type: number
+          resourceAnnotations:
+            type: array
+            items:
+              $ref: "#/components/schemas/ResourceAnnotation"
+          ocrAnnotations:
+            type: array
+            items:
+              $ref: "#/components/schemas/OcrAnnotation"
+
+    DataAndFooterRows:
+      type: array
+      items:
+        type: object
+        properties:
+          colspan:
+            type: number
+        additionalProperties:
+          type: object
+          anyOf:
+            - $ref: "#/components/schemas/Address"
+            - $ref: "#/components/schemas/KeyValuePair"
+            - $ref: "#/components/schemas/Paragraph"
+            - type: object
+              properties:
+                value:
+                  type: string
+                confidence:
+                  type: number
+                uuid:
+                  type: string
+                resourceAnnotations:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ResourceAnnotation"
+      example:
+        [
+          {
+            "col0":
+              {
+                "value": "text",
+                "confidence": 0.990565836429596,
+                "resourceAnnotations":
+                  [
+                    {
+                      "@type":
+                        [
+                          "edm:ResourceAnnotation",
+                          "http://ai4bd.com/resource/cdm/wincasa/insuranceValue",
+                        ],
+                      "@id": "http://ai4bd.com/resource/data/resource-annotation/UUID",
+                      "annotationEnd": 24,
+                      "annotationStart": 13,
+                      "annotationOrigin": "edm:AutomaticAnnotation",
+                      "disambiguationConfidence": 1,
+                      "confidence": 0.9,
+                      "entityConfidence": 1,
+                      "useService": "https://cts.ai4bd.org/annotate",
+                      "text": "cell text",
+                      "@context": "http://models.ai4bd.org/jsonld/edm-context.jsonld",
+                      "relatedCreativeWork": "http://ai4bd.com/resource/data/table-cell/UUID",
+                      "type": "http://ai4bd.com/resource/cdm/wincasa/insuranceValue",
+                      "id": "ID",
+                    },
+                  ],
+                "uuid": "http://ai4bd.com/resource/data/table-cell/UUID",
+              },
+            "col1":
+              {
+                "value": "2'763'600",
+                "confidence": 0.9881747961044312,
+                "resourceAnnotations": [],
+                "uuid": "http://ai4bd.com/resource/data/table-cell/UUID",
+              },
+          },
+          {
+            "col0":
+              {
+                "value": "Value",
+                "confidence": 0.990565836429596,
+                "resourceAnnotations": [],
+                "uuid": "http://ai4bd.com/resource/data/table-cell/UUID",
+              },
+            "colspan": 2,
+          },
+        ]
+
+    InferenceRule:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+          enum:
+            - "edm:InferenceShape"
+        relatedCreativeWork:
+          type: string
+        conditions:
+          type: array
+          items:
+            type: object
+            properties:
+              comment:
+                type: string
+              label:
+                type: string
+              type:
+                type: string
+              message:
+                type: string
+              value:
+                type: number
+              objectClasses:
+                type: object
+        connector:
+          type: string
+          enum:
+            - AND
+            - OR
+        title:
+          type: string
+        actions:
+          type: object
+        classesActionsMapping:
+          type: object
+    ShaclRule:
+      type: object
+      properties:
+        "@id":
+          type: string
+        "@type":
+          type: string
+          enum:
+            - "http://www.w3.org/ns/shacl#NodeShape"
+        relatedCreativeWork:
+          type: string
+        comment:
+          type: string
+        type:
+          type: string
+        message:
+          type: string
+        value:
+          type: number
+        objectClasses:
+          type: object
+    TermExtraction:
+      type: object
+      required:
+        - "fileName"
+        - "fileUrl"
+      properties:
+        "fileName":
+          type: string
+        "fileUrl":
+          type: string
+        "dateTime":
+          type: string
+        "extractions":
+          type: array
+          items:
+            type: object
+            properties:
+              "taskId":
+                type: string
+              "status":
+                type: string
+              "termResultUrl":
+                type: string
+              "language":
+                type: string
+              "outputType":
+                type: string
+              "inputType":
+                type: string
+              "tfidfNgramMin":
+                type: number
+              "tfidfNgramMax":
+                type: number
+              "contextWordMax":
+                type: number
+              "contextWindowSize":
+                type: number
+    Rml:
+      type: object
+      properties:
+        "id":
+          type: string
+        "uid":
+          type: string
+        "content":
+          type: string
