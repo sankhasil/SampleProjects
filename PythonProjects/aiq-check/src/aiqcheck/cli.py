@@ -5,8 +5,6 @@ import click
 
 import aiqcheck.detector.qr as datacode_detector
 
-# import aiqcheck.service.app as aiq_service
-
 
 def configure_logging() -> None:
     """Configure logging of the application."""
