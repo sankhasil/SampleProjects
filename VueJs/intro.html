@@ -1,0 +1,117 @@
+<html>
+
+<head>
+   <title>VueJs Introduction</title>
+   <script type="text/javascript" src="lib/vue.js"></script>
+   <script type="text/javascript" src="lib/jquery-3.6.0.js"></script>
+</head>
+
+<body>
+   <div id="intro" style="text-align:center;">
+      <h1>{{ message }}</h1>
+   </div>
+   <div id="databinding">
+      <button v-on:click="displaynumbers">Click ME</button>
+      <h2> Add Number 100 + 200 = {{total}}</h2>
+   </div>
+   <div id="mapdiagram" v-on:dblclick="loadNextImage">
+      <img src="images/overview-zerozoom.png"></img>
+   </div>
+   <div id="restdatabinding">
+      <button v-on:click="getDevices">Load Device</button>
+      <h2> Devices {{devices}}</h2>
+   </div>
+   <script type="text/javascript">
+      var vue_det = new Vue({
+         el: '#intro',
+         data: {
+            message: 'Map Diagram Tool'
+         }
+      });
+
+      var vm = new Vue({
+         el: '#databinding',
+         data: {
+            num1: 100,
+            num2: 200,
+            total: ''
+         },
+         methods: {
+            displaynumbers: function (event) {
+               console.log(event);
+               return this.total = this.num1 + this.num2;
+            }
+         },
+      });
+
+      var imgV = new Vue({
+         el: '#mapdiagram',
+         data: {
+            img1: "images/overview-zerozoom.png",
+            img2: "images/overview-50%Zoom.png",
+            img3: "images/overview-MicroserviceZoom.png"
+
+         },
+         methods: {
+            loadNextImage: function (event) {
+               console.log(event);
+               return this.img2;
+            }
+         },
+      });
+      var deviceV = new Vue({
+         el: '#restdatabinding',
+         data: {
+            devices: 'sample'
+         },
+         methods: {
+            getDevices: function (event) {
+               console.log("main function");
+               console.log("ajax request to the resource which will require cors enabled");
+               $.ajax
+                  ({
+                     dataType: "json",
+                     url: "https://platform-router-service.qa1.kiwigrid.com/configurable",
+                     method: "GET",
+                     headers: { "Authorization": 'Bearer ' + token },
+                     success: function (data) {
+                        console.log("log response on success");
+                        console.log(data);
+                        this.devices = data;
+                        return $.toString(this.devices);
+                     },
+                     error: function (data) {
+                        console.log("log response on error");
+                        console.log(data);
+                     }
+                  });
+               return this.devices;
+
+            }
+         }
+      });
+      function main(path, token) {
+         console.log("main function");
+         console.log("ajax request to the resource which will require cors enabled");
+         $.ajax
+            ({
+               dataType: "html",
+               url: "http://platform-router-service.qa1.kiwigrid.com" + path,
+               method: "GET",
+               headers: { "Authorization": 'Bearer ' + token },
+               success: function (data) {
+                  console.log("log response on success");
+                  console.log(data);
+               },
+               error: function (data) {
+                  console.log("log response on error");
+                  console.log(data);
+               },
+            });
+      }
+   </script>
+
+
+</body>
+
+</html>
