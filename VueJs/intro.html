@@ -95,9 +95,21 @@
          console.log("ajax request to the resource which will require cors enabled");
          $.ajax
             ({
-               dataType: "html",
-               url: "http://platform-router-service.qa1.kiwigrid.com" + path,
-               method: "GET",
+               dataType: "json",
+               url: "http://localhost:8080/" + path,
+               method: "PUT",
+               data : {
+  "minResttime": 0,
+  "switchingThresholds": {
+    "powerLevels": [
+      0
+    ]
+  },
+  "minRuntime": 0,
+  "userImportance": 0,
+  "optimizationEnabled": true,
+  "mustRuntime": 0
+},
                headers: { "Authorization": 'Bearer ' + token },
                success: function (data) {
                   console.log("log response on success");

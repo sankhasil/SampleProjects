@@ -1,0 +1,71 @@
+#!/usr/bin/env groovy
+
+pipeline {
+	agent { node { label 'cloud-gcp-docker' } }
+
+	options {
+		disableConcurrentBuilds()
+		skipStagesAfterUnstable()
+	}
+
+	environment {
+		ANTORA_IMAGE = "docker.kiwigrid.com/kos/antora-customized:latest"
+		IMAGE_REPO = "docker.kiwigrid.com/kos/internal.kiwios-documentation"
+		VERSION = "1.0.${env.BUILD_NUMBER}"
+		DOCKER_IMAGE = null
+		PLAYBOOK="antora-playbook.yml"
+		SITE_URL="https://technical.docs.kiwios.io/"
+	}
+
+	stages {
+		stage("Build site") {
+			steps {
+				configFileProvider([configFile(fileId: 'jenkins-git-credentials', variable: 'GIT_CREDENTIALS')]) {
+					script {
+						dockerLogin()
+						sh "mkdir -p ${env.WORKSPACE}/build/local-repos"
+						sh "ANTORA_IMAGE=$ANTORA_IMAGE;UID=\$(id -u);WORKINGDIR=${env.WORKSPACE};GIT_CREDENTIALS=\$(cat $GIT_CREDENTIALS);SITE_URL=${SITE_URL};\
+						BUILD_NUMBER=${VERSION};\
+						export ANTORA_IMAGE;export UID;export WORKINGDIR;export GIT_CREDENTIALS;export SITE_URL;\
+						export BUILD_NUMBER;\
+						docker-compose run --rm antora --generator antora-site-generator-lunr ${playbook};docker-compose down"
+					}
+				}
+			}
+		}
+		stage("Build image") {
+			steps {
+				script {
+					DOCKER_IMAGE = docker.build("${env.IMAGE_REPO}:${env.VERSION}")
+				}
+			}
+		}
+		stage("Publish image") {
+			when {
+				branch "master"
+			}
+			steps {
+				script {
+					currentBuild.description = VERSION
+					DOCKER_IMAGE.push()
+				}
+
+			}
+		}
+	}
+	post {
+		always {
+			sh "rm -rf ${env.WORKSPACE}/build"
+			sh "rm -rf ${env.WORKSPACE}/.cache"
+		}
+	}
+}
+
+def dockerLogin() {
+	withCredentials(
+			[[ $class : 'UsernamePasswordMultiBinding', credentialsId : 'jenkins-jira', usernameVariable : 'docker_user', passwordVariable : 'docker_password']]
+	) {
+		sh "docker login --username='${env.docker_user}' --password='${env.docker_password}' docker.kiwigrid.com"
+		sh "docker login --username='${env.docker_user}' --password='${env.docker_password}' docker-unstable.dev.kiwigrid.com"
+	}
+}
